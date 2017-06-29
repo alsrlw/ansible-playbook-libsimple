@@ -1,0 +1,17 @@
+- name: Ensure AWS resources are provisioned
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  roles:
+    - libsimple-aws-objects
+
+- name: Ensure Library Simplified components are deployed
+  hosts: circulation-servers
+  remote_user: ec2-user
+  become: yes
+  roles:
+    - geerlingguy.docker
+    - libsimple-host
+    - libsimple-container-circ-scripts
+    - libsimple-container-circ-deploy
+

@@ -1,0 +1,202 @@
+---
+# AWS SSH access:
+- name: Ensure we have an SSH key pair for ec2
+  ec2_key:
+    name: "{{ libsimple_instance_name }}"
+    region: "{{ aws_region }}"
+  register: ec2_key
+
+- name: Ensure private key exists in local admin's .ssh directory
+  copy:
+    content: "{{ ec2_key.key.private_key }}"
+    dest: "~/.ssh/{{ libsimple_instance_name }}.pem"
+    mode: 0600
+  when: ec2_key.changed
+
+# AWS VPC:
+
+- name: Ensure a dedicated VPC for the AWS components
+  ec2_vpc_net:
+    name: "{{ libsimple_server_type }}-{{ libsimple_instance_name }}"
+    cidr_block: 172.42.0.0/16
+    region: "{{ aws_region }}"
+  register: ec2_vpc
+- set_fact:
+    vpc_id: "{{ ec2_vpc.vpc.id }}"
+
+# AWS VPC Subnets:
+
+- name: Ensure first dedicated VPC subnet for the AWS components
+  ec2_vpc_subnet:
+    state: present
+    region: "{{ aws_region }}"
+    az: "{{ aws_az_1 }}"
+    vpc_id: "{{ vpc_id }}"
+    cidr: 172.42.0.0/20
+    resource_tags:
+      Name: "{{ libsimple_server_type }}-{{ libsimple_instance_name }}-subnet1"
+  register: vpc_subnet_1
+- set_fact:
+    vpc_subnet_1_id: "{{ vpc_subnet_1.subnet.id }}"
+
+    # Additional subnets in separate AWS regions are required for RDS Subnet group
+- name: Ensure second dedicated VPC subnet for the RDS Subnet group
+  ec2_vpc_subnet:
+    state: present
+    region: "{{ aws_region }}"
+    az: "{{ aws_az_2 }}"
+    vpc_id: "{{ vpc_id }}"
+    cidr: 172.42.16.0/20
+    resource_tags:
+      Name: "{{ libsimple_server_type }}-{{ libsimple_instance_name }}-subnet2"
+  register: vpc_subnet_2
+- set_fact:
+    vpc_subnet_2_id: "{{ vpc_subnet_2.subnet.id }}"
+
+- name: Ensure third dedicated VPC subnet for the RDS Subnet group
+  ec2_vpc_subnet:
+    state: present
+    region: "{{ aws_region }}"
+    az: "{{ aws_az_3 }}"
+    vpc_id: "{{ vpc_id }}"
+    cidr: 172.42.32.0/20
+    resource_tags:
+      Name: "{{ libsimple_server_type }}-{{ libsimple_instance_name }}-subnet3"
+  register: vpc_subnet_3
+- set_fact:
+    vpc_subnet_3_id: "{{ vpc_subnet_3.subnet.id }}"
+
+- name: Ensure RDS subnet group with subnets in different AWS availability zones
+  rds_subnet_group:
+    region: "{{ aws_region }}"
+    state: present
+    name: libsimple-postgres
+    description: "{{ libsimple_server_type }}-{{ libsimple_instance_name }}"
+    subnets:
+      - "{{ vpc_subnet_1_id }}"
+      - "{{ vpc_subnet_2_id }}"
+      - "{{ vpc_subnet_3_id }}"
+
+# AWS EC2 Security Group:
+
+- name: Ensure security group exists and open SSH port to the ansible control machine
+  ec2_group:
+    name: "EC2-{{ libsimple_server_type }}-{{ libsimple_instance_name }}"
+    description: "Firewall rules for the {{ libsimple_server_type }}-{{ libsimple_instance_name }} EC2 instance"
+    region: "{{ aws_region }}"
+    vpc_id: "{{ vpc_id }}"
+    rules:
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        cidr_ip: "{{ admin_ip }}/32"
+  register: ec2_sg
+
+# AWS EC2 instance:
+
+- name: Ensure EC2 instance exists with tag "{{ libsimple_server_type }}-{{ libsimple_instance_name }}"
+  local_action:
+    module: ec2
+    wait: yes
+    wait_timeout: 600
+    region: "{{ aws_region }}"
+    instance_type: "{{ ec2_instance_type }}"
+    exact_count: 1
+    count_tag:
+      Name: "{{ libsimple_server_type }}-{{ libsimple_instance_name }}"
+    instance_tags: '{"Name":"{{ libsimple_server_type }}-{{ libsimple_instance_name }}","Type":"{{ libsimple_server_type }}","Environment":"{{ libsimple_environment }}"}'
+    key_name: "{{ libsimple_instance_name }}"
+    group_id: "{{ ec2_sg.group_id }}"
+    image: "{{ ec2_image }}"
+    vpc_subnet_id: "{{ vpc_subnet_1_id }}"
+    assign_public_ip: yes
+    volumes:
+    - device_name: /dev/xvda
+      device_type: gp2
+      volume_size: "{{ ec2_volume_size }}"
+      delete_on_termination: true
+  register: ec2
+
+- name: Add instance to host group in working memory
+  add_host: hostname="{{ item.public_ip }}" groupname="{{ libsimple_server_type }}-servers" ansible_ssh_private_key_file="~/.ssh/{{ libsimple_instance_name }}.pem"
+  with_items:
+    - "{{ ec2.instances }}"
+    - "{{ ec2.tagged_instances }}"
+
+- name: Check SSH to make sure the instance boots
+  wait_for: host={{ item.public_ip }} port=22 delay=60 timeout=720 state=started
+  with_items: "{{ ec2.instances }}"
+
+- name: Store insance IPs for use in later plays
+  set_fact:
+    ec2_ip: "{{ item.public_ip }}"
+    ec2_private_ip: "{{ item.private_ip }}"
+  with_items:
+    - "{{ ec2.instances }}"
+    - "{{ ec2.tagged_instances }}"
+
+# AWS RDS Security Group:
+
+- name: Ensure security group exists for RDS insance with PostgreSQL port open to the private IP of the EC2 instance
+  ec2_group:
+    name: "RDS-{{ libsimple_server_type }}-{{ libsimple_instance_name }}"
+    description: "Firewall rules for the {{ libsimple_server_type }}-{{ libsimple_instance_name }} RDS instance"
+    region: "{{ aws_region }}"
+    vpc_id: "{{ vpc_id }}"
+    rules:
+      - proto: tcp
+        from_port: 5432
+        to_port: 5432
+        cidr_ip: "{{ ec2_private_ip }}/32"
+  register: rds_sg
+- debug: var=rds_sg.group_id
+
+# AWS RDS Database:
+
+- name: Ensure PostgreSQL database exists in AWS RDS
+  rds:
+    command: create
+    wait: yes
+    wait_timeout: 600
+    instance_name: "{{ libsimple_server_type }}-{{ libsimple_instance_name }}"
+    tags:
+      Environment: "{{ libsimple_environment }}"
+      Application: "{{ libsimple_server_type }}"
+    region: "{{ aws_region }}"
+    instance_type: "{{ rds_instance_type }}"
+    db_engine: postgres
+    size: "{{ rds_size }}"
+    subnet: libsimple-postgres
+    vpc_security_groups: "{{ rds_sg.group_id }}"
+    multi_zone: no
+    port: 5432
+    # Create a database on the instance
+    db_name: "{{ psql_db_name }}"
+    username: "{{ psql_username }}"
+    password: "{{ psql_password }}"
+  register: rds
+
+- set_fact:
+    psql_endpoint: "{{ rds.instance.endpoint }}"
+
+- name: Create ElasticSearch cluster
+  ec2_elasticsearch:
+    name: "{{ libsimple_server_type|lower }}-{{ libsimple_instance_name|lower }}"
+    elasticsearch_version: "1.5"
+    region: "{{ aws_region }}"
+    instance_type: "t2.small.elasticsearch"
+    instance_count: 1
+    dedicated_master: False
+    zone_awareness: False
+# dedicated_master_instance_type: "t2.micro.elasticsearch"
+# dedicated_master_instance_count: 2
+    ebs: True
+    volume_type: "standard"
+    volume_size: 10
+    snapshot_hour: 13
+    access_policies: "{{ lookup('template', 'templates/es_cluster_policies.j2') | from_json }}"
+# profile: "myawsaccount"
+  register: aws_es_service
+- debug: var=aws_es_service
+
+

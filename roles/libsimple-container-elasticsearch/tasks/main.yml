@@ -1,0 +1,27 @@
+---
+# Adapted from NYPL-Simplified instructions "Deployment: Quickstart with Docker" 
+# https://github.com/NYPL-Simplified/Simplified/wiki/Deployment:-Quickstart-with-Docker#elasticsearch-optional-support-container
+
+# Ensure that requirement docker-py is installed 
+
+- include: setup-RedHat.yml
+  when: ansible_os_family == 'RedHat'
+
+- include: setup-Debian.yml
+  when: ansible_os_family == 'Debian'
+
+- name: Ensure elasticsearch docker container is started
+  docker_container:
+    name: es
+    image: elasticsearch:1
+    detach: True
+    state: started
+  
+- name: Verify IP address of elasticsearch docker container names 'es'
+  shell: "docker inspect -f '{''{ .NetworkSettings.IPAddress }''}' es"
+  register: docker_inspect_es_ip
+  
+- name: Set variable es_docker_container_ip used later in config.j2 template
+  set_fact: 
+    elasticsearch_endpoint: "{{ docker_inspect_es_ip.stdout }}"
+

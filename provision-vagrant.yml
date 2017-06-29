@@ -1,0 +1,12 @@
+
+# Vagrant playbook for dev/test: 
+
+- hosts: all
+  become: yes
+  roles:
+    - geerlingguy.docker
+    - libsimple-container-elasticsearch
+    - libsimple-container-postgres
+    - libsimple-host
+    - libsimple-container-circ-scripts
+    - libsimple-container-circ-deploy

@@ -1,0 +1,55 @@
+{
+  
+  "default_notification_email_address" : "{{ default_notification_email_address }}",
+  
+  "include_admin_interface": "false",
+  
+  "secret_key" : "{{ secret_key }}",
+  
+  "policies" : {
+    
+    "holds" : "allow",
+    
+    "admin_authentication_domain" : "{{ admin_authentication_domain }}",
+    
+    "authentication" : {
+      "providers" : [{
+        "module" : "api.mock_authentication",
+        "test_username" : "23333B4RC0D3",
+        "test_password" : "1234"
+      }]
+    },
+    
+    "languages" : {
+      "large_collections" : ["eng"],
+      "small_collections" : ["spa", "chi", "rus"]
+    },
+    
+    "analytics" : ["mock_analytics_provider"]
+    
+  },
+  
+  "integrations" : {
+
+  	"Postgres" : {
+	    "production_url" : "postgresql://{{ psql_username }}:{{ psql_password }}@{{ psql_endpoint }}:5432/{{ psql_db_name }}"
+  	},
+
+    "Elasticsearch" : {
+      "url" : "http://{{ elasticsearch_endpoint }}:9200",
+      "works_index" : "circulation-works"
+    },
+
+    "Metadata Wrangler" : {
+      "url" : "{{ metadata_wrangler_url }}"
+    },
+
+    "Content Server" : {
+      "url" : "{{ content_server_url }}"
+    },
+
+    "Circulation Manager" : {
+      "url" : "http://{{ ansible_hostname }}"
+    }
+  }
+}

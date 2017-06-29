@@ -1,0 +1,38 @@
+---
+# Adapted from NYPL-Simplified instructions "Deployment: Quickstart with Docker" 
+# https://github.com/NYPL-Simplified/Simplified/wiki/Deployment:-Quickstart-with-Docker#on-the-host-server
+
+# Tasks on the postgres instance
+
+- name: Ensure psql database exists
+  postgresql_db:
+    login_host: "{{ psql_endpoint }}"
+    name: "{{ psql_db_name }}"
+    state: present
+    
+- name: Ensure psql user "{{ psql_username }}" exists with priveliges on "{{ psql_db_name }}" database
+  postgresql_user:
+    login_host: "{{ psql_endpoint }}"
+    db: "{{ psql_db_name }}"
+    name: "{{ psql_username }}"
+    password: "{{ psql_password }}"
+    priv: ALL
+
+- name: Ensure pgcrypto extension is created on db
+  postgresql_ext:
+    name: pgcrypto
+    login_host: "{{ psql_endpoint }}"
+    db: "{{ psql_db_name }}"
+
+# Host server configuration (outside of Docker containers)
+
+- name: Ensure directory /etc/libsimple exists on the host machine
+  file:
+    path: /etc/libsimple
+    state: directory
+    
+- name: Sync config file /etc/libsimple/config.json with local template in templates/config.j2
+  template:
+    src: templates/config.j2
+    dest: /etc/libsimple/config.json
+

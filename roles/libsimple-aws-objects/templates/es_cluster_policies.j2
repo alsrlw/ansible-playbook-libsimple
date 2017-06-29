@@ -1,0 +1,21 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "*"
+      },
+      "Action": "es:*",
+      "Condition": {
+        "IpAddress": {
+          "aws:SourceIp": [
+            "{{ ec2_ip }}"
+          ]
+        }
+      },
+      "Resource": "arn:aws:es:us-west-2:244737512351:domain/{{ libsimple_server_type|lower }}-{{ libsimple_instance_name|lower }/*"
+    }
+  ]
+}

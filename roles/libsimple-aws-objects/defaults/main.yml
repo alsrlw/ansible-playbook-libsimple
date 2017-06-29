@@ -1,0 +1,21 @@
+admin_ip: 160.94.15.145 # e.g. your local public IP
+# Instance information
+libsimple_instance_name: "MyLibrary"
+libsimple_server_type: "circulation"
+libsimple_environment: "production"
+
+# AWS general
+aws_region: "us-west-2"
+aws_az_1: "us-west-2a"
+aws_az_2: "us-west-2b"
+aws_az_3: "us-west-2c"
+
+# AWS EC2
+ec2_instance_type: "t2.micro"
+ec2_image: "ami-b04e92d0"
+ec2_volume_size: 32
+ec2_subnet_ids: (REQUIRED) # @ToDo: automate this: http://docs.ansible.com/ansible/ec2_vpc_subnet_module.html
+
+# AWS RDS
+rds_instance_type: "db.t2.micro"
+rds_size: 100

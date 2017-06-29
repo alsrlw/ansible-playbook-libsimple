@@ -1,0 +1,16 @@
+---
+# Adapted from NYPL-Simplified instructions "Deployment: Quickstart with Docker" 
+# https://github.com/NYPL-Simplified/Simplified/wiki/Deployment:-Quickstart-with-Docker#on-the-host-server
+
+- name: Ensure circ-scripts docker container is started
+  docker_container:
+    name: circ-scripts
+    image: nypl/circ-scripts
+    volumes:
+      - /etc/libsimple:/etc/circulation
+    env:
+      TZ="{{ system_timezone }}"
+      LIBSIMPLE_DB_INIT="true"
+    detach: True
+    state: started
+

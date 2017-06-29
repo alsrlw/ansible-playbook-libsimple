@@ -1,0 +1,6 @@
+# This file lists any external roles not included in the git repo
+# To install these roles, use this command from the root directory of the repo: 
+# ansible-galaxy install -r roles.yml
+
+- src: geerlingguy.docker
+
