@@ -10,7 +10,7 @@ This repository includes a `Vagrantfile` which will create the target virtual ma
 1. [Install Ansible](http://docs.ansible.com/ansible/intro_installation.html) according to the instructions for the OS of the control machine
 2. [Install Vagrant](https://www.vagrantup.com/docs/installation/) as well as a compatible hypervisor (VirtualBox, VMware, etc.)
 3. Clone this repository to the control machine
-5. Copy the file in `group_vars/all/main.yml.sample` to `group_vars/all/main.yml` and your own values inside the blank quotes. Optionally, adjust the values as needed in `/roles/libsimple-aws-objects/defaults/main.yml` 
+5. Copy the file in `group_vars/all/main.yml.sample` to `group_vars/all/main.yml` and your own values inside the blank quotes.
 4. Open a terminal, `cd` into the repository root directory, and run:
 ```
 vagrant up
@@ -39,7 +39,7 @@ aws_access_key_id = YOUR_AWS_ACCESS_KEY
 aws_secret_access_key = YOUR_AWS_SECRET_ACCESS_KEY
 ```
 5. Clone this repository to your control machine
-6. Copy the file in `group_vars/all/main.yml.sample` to `group_vars/all/main.yml` and edit the file replacing "REQUIRED" with your own values
+6. Copy the file in `group_vars/all/main.yml.sample` to `group_vars/all/main.yml` and your own values inside the blank quotes. Optionally, adjust the values as needed in `/roles/libsimple-aws-objects/defaults/main.yml` 
 7. Open a terminal, `cd` into the repository root directory, and run:
 ```
 ansible-playbook -i localhost provision-aws.yml -vv
