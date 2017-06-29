@@ -1,0 +1,16 @@
+---
+
+# Library Simplified
+default_notification_email_address: ""
+secret_key: ""
+admin_authentication_domain: ""
+metadata_wrangler_url: http://metadata.librarysimplified.org/
+content_server_url: ""
+google_oauth_json_blob: ''
+# PostgreSQL
+psql_db_name: "simplified_circ_db"
+psql_username: "simplified"
+psql_password: ""
+
+# Docker containers
+system_timezone: ""
