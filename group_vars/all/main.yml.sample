@@ -1,4 +1,9 @@
 ---
+admin_ip: "" # e.g. your local admin workstation's public IP
+# Instance information
+libsimple_instance_name: "MyLibrary"
+libsimple_server_type: "circulation"
+libsimple_environment: "production"
 
 # Library Simplified
 default_notification_email_address: ""
