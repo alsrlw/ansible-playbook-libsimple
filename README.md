@@ -30,17 +30,16 @@ You will need:
   - AmazonESFullAccess
 
 1. [Install Ansible](http://docs.ansible.com/ansible/intro_installation.html) according to the instructions for the OS of the control machine
-2. Create an [Ansible inventory](http://docs.ansible.com/ansible/intro_inventory.html) file and include a host entry identifying your target server
-3. Install [`python-boto`](https://pypi.python.org/pypi/boto) on the control machine
-4. Add a file named `.boto` to your home directory on the control (administrator's local) machine with the following:
+2. Install [`python-boto`](https://pypi.python.org/pypi/boto) on the control machine
+3. Add a file named `.boto` to your home directory on the control (administrator's local) machine with the following:
 ```
 [Credentials]
 aws_access_key_id = YOUR_AWS_ACCESS_KEY
 aws_secret_access_key = YOUR_AWS_SECRET_ACCESS_KEY
 ```
-5. Clone this repository to your control machine
-6. Copy the file in `group_vars/all/main.yml.sample` to `group_vars/all/main.yml` and add your own values inside the blank quotes. Optionally, adjust the values as needed in `/roles/libsimple-aws-objects/defaults/main.yml` 
-7. Open a terminal, `cd` into the repository root directory, and run:
+4. Clone this repository to your control machine
+5. Copy the file in `group_vars/all/main.yml.sample` to `group_vars/all/main.yml` and add your own values inside the blank quotes. Optionally, adjust the values as needed in `/roles/libsimple-aws-objects/defaults/main.yml` 
+6. Open a terminal, `cd` into the repository root directory, and run:
 ```
 ansible-playbook -i localhost provision-aws.yml -vv
 ```
