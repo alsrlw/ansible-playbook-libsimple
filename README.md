@@ -1,6 +1,5 @@
 # Library Simplified Ansible Provisioner (Circulation Server)
-This [Ansible playbook](http://docs.ansible.com/ansible/) will provision a [Library Simplified circulation server]
-(https://github.com/NYPL-Simplified/circulation/) on Amazon Web Services (AWS). 
+This [Ansible playbook](http://docs.ansible.com/ansible/) will provision a [Library Simplified circulation server](https://github.com/NYPL-Simplified/circulation/) on Amazon Web Services (AWS). 
 
 ## Deploy Using Vagrant for Local Dev/Test
 _Because it uses local docker containers to provide Elasticsearch and PostgreSQL, the `provision-vagrant.yml` playbook is not suitable for production._ 
