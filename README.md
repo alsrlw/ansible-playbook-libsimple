@@ -13,6 +13,7 @@ This repository includes a `Vagrantfile` which will create the target virtual ma
 5. Copy the file in `group_vars/all/main.yml.sample` to `group_vars/all/main.yml` and add your own values inside the blank quotes.
 4. Open a terminal, `cd` into the repository root directory, and run:
 ```
+ansible-galaxy install -r roles.yml
 vagrant up
 ```
 
@@ -41,6 +42,7 @@ aws_secret_access_key = YOUR_AWS_SECRET_ACCESS_KEY
 5. Copy the file in `group_vars/all/main.yml.sample` to `group_vars/all/main.yml` and add your own values inside the blank quotes. Optionally, adjust the values as needed in `/roles/libsimple-aws-objects/defaults/main.yml` 
 6. Open a terminal, `cd` into the repository root directory, and run:
 ```
+ansible-galaxy install -r roles.yml
 ansible-playbook -i localhost provision-aws.yml -vv
 ```
 
