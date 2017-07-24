@@ -1,0 +1,35 @@
+---
+# Adapted from NYPL-Simplified instructions "Deployment: Quickstart with Docker" 
+# https://github.com/NYPL-Simplified/Simplified/wiki/Deployment:-Quickstart-with-Docker#postgres-optional-support-container
+
+# Ensure that requirements docker-py and psycopg2 are installed 
+
+- include: setup-RedHat.yml
+  when: ansible_os_family == 'RedHat'
+
+- include: setup-Debian.yml
+  when: ansible_os_family == 'Debian'
+
+# Ensure that the container has been created and is running
+
+- name: Ensure postgres docker container is started
+  docker_container:
+    name: pg
+    image: postgres:9.5
+    detach: True
+    state: started
+  
+- name: Verify IP address of postgres docker container named 'pg'
+  shell: "docker inspect -f '{''{ .NetworkSettings.IPAddress }''}' pg"
+  register: docker_inspect_pg_ip
+  
+- name: Set variable pg_docker_container_ip (used later in config.j2 template)
+  set_fact: 
+    psql_endpoint: "{{ docker_inspect_pg_ip.stdout }}"
+    
+- name: Ensure that the posgres server is up and accepting connections before moving on
+  wait_for:
+    host: "{{ psql_endpoint }}"
+    port: 5432
+    delay: 10
+    

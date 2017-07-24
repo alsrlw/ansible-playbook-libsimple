@@ -1,0 +1,7 @@
+---
+- name: Ensure docker-py is installed
+  package: name=python-docker-py state=present
+  
+- name: Ensure psycopg2 is installed
+  package: name=python-psycopg2 state=present
+  
