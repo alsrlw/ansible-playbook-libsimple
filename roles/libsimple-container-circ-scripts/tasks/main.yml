@@ -5,12 +5,13 @@
 - name: Ensure circ-scripts docker container is started
   docker_container:
     name: circ-scripts
-    image: nypl/circ-scripts
+    image: nypl/circ-scripts:2.0.0
     volumes:
       - /etc/libsimple:/etc/circulation
     env:
       TZ="{{ system_timezone }}"
-      LIBSIMPLE_DB_INIT="true"
+      SIMPLIFIED_DB_TASK='migrate'
+      SIMPLIFIED_PRODUCTION_DATABASE='postgres://{{ psql_username }}:{{ psql_password }}@{{ psql_endpoint }}:5432/{{ psql_db_name }}'
     detach: True
     state: started
 

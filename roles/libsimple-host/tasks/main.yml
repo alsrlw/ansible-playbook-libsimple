@@ -24,15 +24,4 @@
     login_host: "{{ psql_endpoint }}"
     db: "{{ psql_db_name }}"
 
-# Host server configuration (outside of Docker containers)
-
-- name: Ensure directory /etc/libsimple exists on the host machine
-  file:
-    path: /etc/libsimple
-    state: directory
-    
-- name: Sync config file /etc/libsimple/config.json with local template in templates/config.j2
-  template:
-    src: templates/config.j2
-    dest: /etc/libsimple/config.json
 
