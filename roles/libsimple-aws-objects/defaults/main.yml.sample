@@ -1,0 +1,27 @@
+
+# AWS account number under which vpc, ec2, rds, and elasticsearch services
+# will be installed
+aws_account: ""
+
+# AWS region and availability zone in which deployed
+# US-East is the AWS default
+aws_region: "us-east-1"
+aws_az_1: "us-east-1a"
+aws_az_2: "us-east-1b"
+aws_az_3: "us-east-1c"
+
+# AWS EC2
+# The t2.micro falls under the AWS Free Tier; increase as needed for testing
+ec2_instance_type: "t2.micro"
+# Tested operating system AMI image: Amazon Linux
+# Image below is the current Amazon-provided Amazon Linux image, as of time
+# of commit. You may need to verify it is still available, or find the ID 
+# of the latest version of the image.
+ec2_image: "ami-8a7859ef"
+# Size in gigabytes of Elastic Block Storage to allocate (fits under Free Tier)
+# Increase as needed
+ec2_volume_size: 10
+
+# AWS RDS
+rds_instance_type: "db.t2.micro"
+rds_size: 10

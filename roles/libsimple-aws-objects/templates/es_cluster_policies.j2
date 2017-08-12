@@ -2,12 +2,13 @@
   "Version": "2012-10-17",
   "Statement": [
     {
-      "Sid": "",
       "Effect": "Allow",
       "Principal": {
         "AWS": "*"
       },
-      "Action": "es:*",
+      "Action": [
+        "es:*"
+      ],
       "Condition": {
         "IpAddress": {
           "aws:SourceIp": [
@@ -15,7 +16,7 @@
           ]
         }
       },
-      "Resource": "arn:aws:es:us-west-2:244737512351:domain/{{ libsimple_server_type|lower }}-{{ libsimple_instance_name|lower }/*"
+      "Resource": "arn:aws:es:{{ aws_region }}:{{ aws_account }}:domain/{{ ec2_es_domain_name[0:28] }}/*"
     }
   ]
 }

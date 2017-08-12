@@ -158,7 +158,7 @@
     command: create
     wait: yes
     wait_timeout: 600
-    instance_name: "{{ libsimple_server_type }}-{{ libsimple_instance_name }}"
+    instance_name: "{{ libsimple_server_type }}-{{ libsimple_instance_name.replace(' ','-') }}"
     tags:
       Environment: "{{ libsimple_environment }}"
       Application: "{{ libsimple_server_type }}"
@@ -179,9 +179,12 @@
 - set_fact:
     psql_endpoint: "{{ rds.instance.endpoint }}"
 
+- set_fact:
+    ec2_es_domain_name: "{{ libsimple_server_type|lower }}-{{ libsimple_instance_name.replace(' ','-')|lower }}"
+
 - name: Create ElasticSearch cluster
   ec2_elasticsearch:
-    name: "{{ libsimple_server_type|lower }}-{{ libsimple_instance_name|lower }}"
+    name: "{{ ec2_es_domain_name[0:28] }}"
     elasticsearch_version: "1.5"
     region: "{{ aws_region }}"
     instance_type: "t2.small.elasticsearch"
@@ -194,7 +197,7 @@
     volume_type: "standard"
     volume_size: 10
     snapshot_hour: 13
-    access_policies: "{{ lookup('template', 'templates/es_cluster_policies.j2') | from_json }}"
+    access_policies: "{{ lookup('template', 'templates/es_cluster_policies.j2', convert_data=False) | from_json }}"
 # profile: "myawsaccount"
   register: aws_es_service
 - debug: var=aws_es_service
