@@ -24,6 +24,15 @@
 - set_fact:
     vpc_id: "{{ ec2_vpc.vpc.id }}"
 
+# AWS VPC Internet Gateway:
+
+- name: Ensure an Internet Gateway is attached to the VPC
+  ec2_vpc_igw:
+    vpc_id: "{{ vpc_id }}"
+    region: "{{ aws_region }}"
+    state: present
+  register: igw
+
 # AWS VPC Subnets:
 
 - name: Ensure first dedicated VPC subnet for the AWS components
@@ -39,7 +48,21 @@
 - set_fact:
     vpc_subnet_1_id: "{{ vpc_subnet_1.subnet.id }}"
 
-    # Additional subnets in separate AWS regions are required for RDS Subnet group
+# Create (public) route for subnet to the Internet Gateway
+- name: Attach route for first subnet to Internet Gateway
+  ec2_vpc_route_table:
+    vpc_id: "{{ vpc_id }}"
+    region: "{{ aws_region }}"
+    tags:
+      Name: Public
+    subnets:
+      - "{{ vpc_subnet_1_id }}"
+    routes:
+      - dest: 0.0.0.0/0
+        gateway_id: "{{ igw.gateway_id }}"
+  register: public_route_table    
+
+# Additional subnets in separate AWS regions are required for RDS Subnet group
 - name: Ensure second dedicated VPC subnet for the RDS Subnet group
   ec2_vpc_subnet:
     state: present
