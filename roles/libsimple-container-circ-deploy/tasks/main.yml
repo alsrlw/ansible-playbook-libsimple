@@ -5,7 +5,7 @@
 - name: Ensure circ-scripts docker container is started
   docker_container:
     name: circ-deploy
-    image: nypl/circ-deploy:2.0.0
+    image: nypl/circ-deploy:2.0.1
 
     ports:
       - 80:80

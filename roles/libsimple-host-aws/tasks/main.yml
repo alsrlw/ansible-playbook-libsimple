@@ -1,0 +1,55 @@
+---
+# Adapted from NYPL-Simplified instructions "Deployment: Quickstart with Docker" 
+# https://github.com/NYPL-Simplified/Simplified/wiki/Deployment:-Quickstart-with-Docker#on-the-host-server
+
+# Ensure required modules are on the EC2 host
+
+- name: Install the EPEL repository
+  yum:
+    name: epel-release
+    state: present
+
+- name: Install the latest version of python-pip
+  yum: 
+    name: python-pip
+    state: present
+
+- name: Install the docker-py package
+  pip: 
+    name: docker-py
+    state: present
+
+- name: Install psycopg2 python module
+  pip: 
+    name: psycopg2
+    state: present
+
+# Tasks on the postgres instance
+
+- name: Ensure psql database exists
+  postgresql_db:
+    # The psql_endpoint variable is not persisted between plays among multiple "hosts"
+    # Therefore, need to consult hostvars 
+    login_host: "{{ psql_endpoint }}"
+    login_user: "{{ psql_username }}"
+    login_password: "{{ psql_password }}"
+    name: "{{ psql_db_name }}"
+    state: present
+    
+- name: Ensure psql user "{{ psql_username }}" exists with privileges on "{{ psql_db_name }}" database
+  postgresql_user:
+    login_host: "{{ psql_endpoint }}"
+    db: "{{ psql_db_name }}"
+    user: "{{ psql_username }}"
+    login_user: "{{ psql_username }}"
+    login_password: "{{ psql_password }}"
+    priv: ALL
+
+- name: Ensure pgcrypto extension is created on db
+  postgresql_ext:
+    name: pgcrypto
+    login_host: "{{ psql_endpoint }}"
+    db: "{{ psql_db_name }}"
+    login_user: "{{ psql_username }}"
+    login_password: "{{ psql_password }}"
+

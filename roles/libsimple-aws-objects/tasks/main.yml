@@ -202,6 +202,10 @@
 - set_fact:
     psql_endpoint: "{{ rds.instance.endpoint }}"
 
+- name: Display PostgresSQL endpoint
+  debug:
+    var: psql_endpoint
+
 - set_fact:
     ec2_es_domain_name: "{{ libsimple_server_type|lower }}-{{ libsimple_instance_name.replace(' ','-')|lower }}"
 

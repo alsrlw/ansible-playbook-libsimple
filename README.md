@@ -6,7 +6,11 @@ _Because it uses local docker containers to provide Elasticsearch and PostgreSQL
 
 This repository includes a `Vagrantfile` which will create the target virtual machine for you on your local workstation and run the playbook against that newly created virtual machine. 
 
-1. [Install Ansible](http://docs.ansible.com/ansible/intro_installation.html) according to the instructions for the OS of the control machine
+1. [Install Ansible](http://docs.ansible.com/ansible/intro_installation.html) according to the instructions for the OS of the control machine. For the Elasticsearch container you will need a recent version of Ansible (> 2.x). You can check the version number installed with the command
+```
+ansible --version
+```
+
 2. [Install Vagrant](https://www.vagrantup.com/docs/installation/) as well as a compatible hypervisor (VirtualBox, VMware, etc.)
 3. Clone this repository to the control machine
 5. Copy the file in `group_vars/all/main.yml.sample` to `group_vars/all/main.yml` and add your own values inside the blank quotes.
