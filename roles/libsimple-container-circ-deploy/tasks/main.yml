@@ -2,7 +2,7 @@
 # Adapted from NYPL-Simplified instructions "Deployment: Quickstart with Docker" 
 # https://github.com/NYPL-Simplified/Simplified/wiki/Deployment:-Quickstart-with-Docker#on-the-host-server
 
-- name: Ensure circ-scripts docker container is started
+- name: Ensure circ-deploy docker container is started
   docker_container:
     name: circ-deploy
     image: nypl/circ-deploy:2.0.1

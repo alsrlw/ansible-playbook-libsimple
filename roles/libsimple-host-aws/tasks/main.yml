@@ -14,6 +14,12 @@
     name: python-pip
     state: present
 
+# Upgrade pip to latest version
+- name: Upgrade pip
+  pip:
+    name: pip
+    extra_args: --upgrade
+
 - name: Install the docker-py package
   pip: 
     name: docker-py

@@ -1,0 +1,54 @@
+#!/bin/bash
+# Destroy/Remove SimplyE Circulation Manager AWS Services
+# (generally for those associated with testing deployments)
+# 
+# Robert L. Williams
+# Amigos Library Services
+# (c) Copyright 2017
+# MIT license
+
+# NOTES:
+# Credit: Mike Farah, author of yaml processing utility
+# https://github.com/mikefarah/yaml
+
+
+#--------------------------------------------------------------------------
+# Remove Elasticsearch service instance
+#   * The current ec2_elasticsearch module does not support 'state: absent'
+#     so we must use the AWS CLI to remove the service
+#--------------------------------------------------------------------------
+# Load VPC/network instance name from existing Ansible variable file
+INSTANCE_NAME=$(./yaml r group_vars/all/main.yml libsimple_instance_name)
+
+# Test for existence of specified VPC. If none, quit; assume not deployed
+VPC_ID=$(aws ec2 describe-vpcs --query "Vpcs[].[Tags[?Key=='Name'].Value|[0],VpcId]" | grep "$INSTANCE_NAME" | awk -F "\t" '{print $2}')
+if [ -z $VPC_ID ] ; then
+    # The VPC ID does not exist, so we're assuming the deployment
+    # hasn't happened yet!
+    echo "The SimplyE Circulation Manager for instance '$INSTANCE_NAME' "
+    echo "hasn't been deployed yet."
+    exit 0
+else
+    echo "VPC ID: "$VPC_ID
+fi
+
+# Load remaining variables from existing Ansible .yml files
+SRVR_TYPE=$(./yaml r group_vars/all/main.yml libsimple_server_type)
+FULL_INSTANCE=$SRVR_TYPE"-"$INSTANCE_NAME
+ES_DASHES=${FULL_INSTANCE// /-}
+ES_LOWER=${ES_DASHES,,}
+# AWS ES Instance Names must be 28 characters or less in length
+ES_INSTANCE=${ES_LOWER:0:28}
+
+# Remove Elasticsearch service if exists (no data saved with this version)
+if [ ! -z  $(aws es list-domain-names --query="DomainNames[?DomainName=='$ES_INSTANCE'].[DomainName]" --output 'text')  ]; then
+    # There is indeed an Elasticsearch service configured, so delete it
+    echo "Elasticsearch Domain being deleted: "$ES_INSTANCE
+    aws es delete-elasticsearch-domain --domain-name $ES_INSTANCE
+fi
+
+#--------------------------------------------------------------------------
+# Call Ansible playbook to remove remaining services and VPC/network
+#--------------------------------------------------------------------------
+ansible-playbook -i localhost destroy-aws.yml -vv
+

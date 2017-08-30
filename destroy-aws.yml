@@ -1,0 +1,110 @@
+---
+# Destroy/remove AWS services associated with a test implementation of
+# the SimplyE Circulation Manager
+# (The AWS ES services is removed by a command line utility)
+
+- hosts: localhost
+  connection: local
+
+  vars:
+    - aws_region: "us-east-2"
+
+  tasks:
+    - name: Remove RDS Instance
+      rds:
+        region: "{{ aws_region }}"
+        command: delete
+        instance_name: "{{ libsimple_server_type }}-{{ libsimple_instance_name.replace(' ','-') }}"
+        wait: yes
+        wait_timeout: 1800
+
+    - name: Remove RDS Subnet Group
+      rds_subnet_group:
+        region: "{{ aws_region }}"
+        state: absent
+        name: "libsimple-postgres"
+
+    - name: Get EC2 instance ID
+      ec2_remote_facts:
+        region: "{{ aws_region }}"
+        filters:
+          "tag:Name": "{{ libsimple_server_type }}-{{ libsimple_instance_name }}"
+      register: ec2_facts
+ 
+    - name: Terminate EC2 instance
+      ec2:
+        instance_ids: "{{ item.id }}"
+        state: absent
+        region: "{{ aws_region }}"
+        wait: yes
+        wait_timeout: 600
+      with_items: "{{ ec2_facts.instances }}"
+
+    # Get VPC ID to identify most other services/features
+    - name: Get VPC ID
+      ec2_vpc_net_facts:
+        region: "{{ aws_region }}"
+        filters:
+          "tag:Name": "{{ libsimple_server_type }}-{{ libsimple_instance_name }}"
+      register: vpc_facts
+ 
+    - name: Remove Security Group, RDS Postgres
+      ec2_group:
+        name: "RDS-{{ libsimple_server_type }}-{{ libsimple_instance_name }}"
+        region: "{{ aws_region }}"
+        state: absent
+ 
+    - name: Remove Security Group, EC2 Circulation Manager
+      ec2_group:
+        name: "EC2-{{ libsimple_server_type }}-{{ libsimple_instance_name }}"
+        region: "{{ aws_region }}"
+        vpc_id: "{{ vpc_facts['vpcs'][0]['id'] }}"
+        description: Security group for EC2 Circulation Manager
+        state: absent
+ 
+    - name: Remove Route Table, public subnet
+      ec2_vpc_route_table:
+        region: "{{ aws_region }}"
+        tags:
+          Name: "Public"
+        vpc_id: "{{ vpc_facts['vpcs'][0]['id'] }}"   
+        state: absent
+ 
+    - name: Remove Subnet, Public 1
+      ec2_vpc_subnet:
+        region: "{{ aws_region }}"
+#        cidr: "{{ public_subnet_cidr }}"
+        cidr: "172.42.0.0/20"
+        vpc_id: "{{ vpc_facts['vpcs'][0]['id'] }}"
+        state: absent
+ 
+    - name: Remove Subnet, Private 2
+      ec2_vpc_subnet:
+        region: "{{ aws_region }}"
+#        cidr: "{{ private_subnet_1_cidr }}"
+        cidr: "172.42.16.0/20"
+        vpc_id: "{{ vpc_facts['vpcs'][0]['id'] }}"
+        state: absent
+ 
+    - name: Remove Subnet, Private 3
+      ec2_vpc_subnet:
+        region: "{{ aws_region }}"
+#        cidr: "{{ private_subnet_2_cidr }}"
+        cidr: "172.42.32.0/20"
+        vpc_id: "{{ vpc_facts['vpcs'][0]['id'] }}"
+        state: absent
+ 
+    - name: Remove Internet Gateway    
+      ec2_vpc_igw:
+        region: "{{ aws_region }}"
+        vpc_id: "{{ vpc_facts['vpcs'][0]['id'] }}"
+        state: absent
+ 
+    - name: Remove VPC
+      ec2_vpc_net:
+        region: "{{ aws_region }}"
+        name: "{{ libsimple_server_type }}-{{ libsimple_instance_name }}"
+#        cidr_block: "{{ vpc_cidr }}"
+        cidr_block: "172.42.0.0/16"
+        state: absent
+
