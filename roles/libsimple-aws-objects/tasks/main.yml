@@ -133,6 +133,7 @@
     image: "{{ ec2_image }}"
     vpc_subnet_id: "{{ vpc_subnet_1_id }}"
     assign_public_ip: yes
+# May need to create swap volume
     volumes:
     - device_name: /dev/xvda
       device_type: gp2
