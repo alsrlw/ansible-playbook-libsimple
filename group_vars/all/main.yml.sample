@@ -7,7 +7,7 @@ libsimple_environment: "production"
 
 # EC2 Login information
 # Amazon Linux default below
-#ec2_user_name: "ec2-user"
+#ec2_initial_user: "ec2-user"
 # CentOS default
 ec2_initial_user: "centos"
 
