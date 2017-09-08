@@ -46,15 +46,15 @@ Vagrant.configure(2) do |config|
     override.vm.box = settings['distribution_id']
     override.vm.box_url = "https://github.com/displague/vagrant-linode/raw/master/box/linode.box"
 
-    provider.token = 'oGDqxEV0oBxwU8czIc08084B9X5huHqm6c27q0WXBBe6mX0CZ2BhBQBQFQ35ZxKD'
-    provider.distribution = 'CentOS 7'
-    provider.datacenter = 'dallas'
-    provider.plan = 'Linode 2048'
-    provider.label = 'SimplyE-Test-Linode-1'
+    provider.token = settings['linode_api_key']
+    provider.distribution = settings['distribution_name']
+    provider.datacenter = settings['datacenter_id']
+    provider.plan = settings['plan_id']
+    provider.label = settings['linode_name']
     # Main Disk Image Size (string): ( Full Allocation - Swap ) if missing
-    provider.xvda_size = '12288'
+    provider.xvda_size = settings['primary_disk_size']
     # Swap Image Size (string): 256MB if missing
-    provider.swap_size = '2048'
+    provider.swap_size = settings['swap_size']
 
     # provider.planid = 1
     # provider.paymentterm = <*1*,12,24>
