@@ -91,19 +91,19 @@ ansible --version
 4. Open a console/terminal window if not open.
 5. Run the following commands to install the necessary or (optional) utilities:
 ```
-	sudo pip install linode-python
-	vagrant plugin install vagrant-linode
-	; (Optional) If you want to experiment with Linode API access from the console command-line
-	; On RedHat distributions:
-	sudo yum install linode-cli
-	sudo yum install perl-LWP-Protocol-https
-	; Or on Debian distributions:
-	sudo apt-get install linode-cli
-	sudo apt-get install liblwp-protocol-https-perl
+sudo pip install linode-python
+vagrant plugin install vagrant-linode
+; (Optional) If you want to experiment with Linode API access from the console command-line
+; On RedHat distributions:
+sudo yum install linode-cli
+sudo yum install perl-LWP-Protocol-https
+; Or on Debian distributions:
+sudo apt-get install linode-cli
+sudo apt-get install liblwp-protocol-https-perl
 ```
 6. Create a directory for this project's file: `mkdir ~/simplye_circman` (or something similar) 
 7. Make the project directory current: `cd ~/simplye_circman`
-8. Clone this repository to the control machine: `https://github.com/alsrlw/ansible-playbook-libsimple.git ./`
+8. Clone this repository to the control machine: `git clone https://github.com/alsrlw/ansible-playbook-libsimple.git ./`
 9. Copy the file in `group_vars/all/main.yml.sample` to `group_vars/all/main.yml` and add your own values inside the blank quotes.
 10. Copy the file in `vars/linode_vars.yml.sample` to `vars/linode_vars.yml` and add your own values inside the blank quotes.
 11. Copy the file `Vagrantfile.linode` to `Vagrantfile`
@@ -117,10 +117,10 @@ ansible --version
     * Click the ***Create API Key*** button
     * Select and copy from the green highlight bar the text of the API key.
 14. Paste the resulting Linode API key text to the appropriate variable value in `vars/linode_vars.yml`.
-15. Create an SSH key pair for use in connecting the the virtual server as the admin user; create the user .ssh directory, if needed:
+15. Create an SSH key pair for use in connecting the the virtual server as the admin user; create the user .ssh directory, if needed. When prompted for a password (twice), press <ENTER> key to create a passphraseless key--handy if you need programmatic access to the server as we're doing here.
 ```
-	mkdir ~/.ssh
-    ssh-keygen -t rsa -b 4096 -f ~/.ssh/scm_linode_test1
+mkdir ~/.ssh
+ssh-keygen -t rsa -b 4096 -f ~/.ssh/scm_linode_test1
 ```
 16. If you wish to access the Linode API from the command line and installed the optional utilities above, you will need to create a configuration file at `~/.linodecli/config`. The CLI utility comes with a simple configuration script that creates this file (along with an API key for this specific access method). Start the configuration by issuing the command: `linode configure` and enter appropriate defaults.
 17. Generate a crypted password for your admin user password:
@@ -145,4 +145,3 @@ To remove the virtual server you've created at Linode:
 3. Destroy the server resources: `vagrant destroy`
 
 At this point, you can make whatever changes you may need to the source/configuration files. To re-deploy another server, simply re-issue the `vagrant up` command.
-
