@@ -1,0 +1,22 @@
+---
+# Variables for Linode Creation
+
+linode_api_key: ""
+linode_name: "SimplyE-test1"
+distribution_name: "CentOS 7"
+distribution_id: "linode/centos7"
+# The Linode default plan is Linode 1024; but plan Linode 2048 is required for SCM
+plan_id: "Linode 2048"
+datacenter_id: "dallas"
+# Disk image sizes in MB
+primary_disk_size: 12288
+swap_size: 2048
+root_password: ""
+host_name: ""
+admin_username: ""
+# A sample key pair filename
+admin_ssh_keyname: "scm_linode_test1"
+admin_password: ""
+
+# Variables for Vagrant
+vagrant_machine1_label: ""
