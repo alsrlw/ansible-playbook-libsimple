@@ -5,7 +5,7 @@
 - name: Ensure circ-deploy docker container is started
   docker_container:
     name: circ-deploy
-    image: nypl/circ-deploy:2.0.1
+    image: "nypl/circ-deploy:{{ simplye_circulation_version }}"
 
     ports:
       - 80:80
