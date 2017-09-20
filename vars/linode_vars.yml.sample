@@ -3,6 +3,7 @@
 
 linode_api_key: ""
 linode_name: "SimplyE-test1"
+linode_display_group: "SimplyE"
 distribution_name: "CentOS 7"
 distribution_id: "linode/centos7"
 # The Linode default plan is Linode 1024; but plan Linode 2048 is required for SCM

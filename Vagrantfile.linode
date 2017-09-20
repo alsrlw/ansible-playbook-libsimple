@@ -51,6 +51,7 @@ Vagrant.configure(2) do |config|
     provider.datacenter = settings['datacenter_id']
     provider.plan = settings['plan_id']
     provider.label = settings['linode_name']
+    provider.group = settings['linode_display_group']
     # Main Disk Image Size (string): ( Full Allocation - Swap ) if missing
     provider.xvda_size = settings['primary_disk_size']
     # Swap Image Size (string): 256MB if missing

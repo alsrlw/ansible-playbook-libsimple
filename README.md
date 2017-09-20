@@ -1,7 +1,14 @@
 # Library Simplified Ansible Provisioner (Circulation Server)
-This [Ansible playbook](http://docs.ansible.com/ansible/) will provision a [Library Simplified circulation server](https://github.com/NYPL-Simplified/circulation/) on Amazon Web Services (AWS). 
+This set of automation files using [Vagrant](http://https://www.vagrantup.com/) and [Ansible](http://docs.ansible.com/ansible/) will provision a [Library Simplified circulation server](https://github.com/NYPL-Simplified/circulation/) in a variety of development environments. 
 
-## Deploy Using Vagrant to Local VM for Dev/Testing
+*Deployment Options:*
+* [Deploy Using Vagrant to Local VM for Dev Testing](#vagrant-local)
+* [Deploy Using Ansible to Amazon Web Services](#ansible-aws)
+* [Deploy Using Vagrant to Linode.com (Single)](#vagrant-linode-single)
+
+
+<a name="vagrant-local"></a>
+## Deploy Using Vagrant to Local VM for Dev Testing
 _Because it uses local docker containers to provide Elasticsearch and PostgreSQL, the `provision-vagrant.yml` playbook is not suitable for production._ 
 
 This repository includes a Vagrant configuration file which will create the target virtual machine for you on your local workstation and run an Ansible playbook against that newly created virtual machine. 
@@ -30,8 +37,10 @@ Whenever you create resources for development and testing purposes, you need a w
 
 At this point, you can make whatever changes you may need to the source/configuration files. To test again, simply re-issue the `vagrant up` command.
 
+
+<a name="ansible-aws"></a>
 ## Deploy Using Ansible to Amazon Web Services
-Ansible will connect to AWS and create the necessary AWS objects, then connect to your target EC2 server and put all of the Library Simplified components in place. 
+Ansible will connect to your AWS account and create the necessary AWS objects, then connect to your target EC2 server and put all of the Library Simplified components in place. 
 
 ### Requirements
 You will need:
@@ -70,7 +79,9 @@ As mentioned for the VirtualBox option above, you likely will need to remove AWS
 
 Once the process has completed, you can make whatever changes you may need to the source/configuration files. To test again, simply re-issue the `ansible-playbook` command shown in step 7 above.
 
-## Deploy Using Vagrant to Linode.com
+
+<a name="vagrant-linode-single"></a>
+## Deploy Using Vagrant to Linode.com (Single)
 As mentioned in the local Vagrant example above, this implementation is currently only for non-production purposes. It will create a single-server solution for the Circulation Manager with minimal security/scalability considerations. It _is_ sufficient, however, for learning how the system operates and for testing.  
                      
 This repository includes a Vagrant configuration file which will create the target virtual server for you in an existing Linode.com account. Ansible playbooks are also executed to configure services in that newly created virtual server. 
