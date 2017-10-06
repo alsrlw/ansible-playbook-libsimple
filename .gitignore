@@ -1,6 +1,7 @@
 *.retry
 .vagrant
-test*.yml
+Vagrantfile
+test*
 *.*~
 group_vars/all/main.yml
 group_vars/all/main.yml.vagrant
