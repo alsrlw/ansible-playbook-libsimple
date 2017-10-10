@@ -2,6 +2,24 @@
 # Adapted from NYPL-Simplified instructions "Deployment: Quickstart with Docker" 
 # https://github.com/NYPL-Simplified/Simplified/wiki/Deployment:-Quickstart-with-Docker#on-the-host-server
 
+- name: Check whether a manual configuration file exists locally
+  local_action: stat path=files/circulation.config.json
+  register: config_file
+
+- name: If source config exists, create the destination config directory
+  file:
+    path: /etc/libsimple
+    state: directory
+    mode: 0755
+  when: config_file.stat.exists
+
+- name: If source config exists, copy the circulation config file (for swim lanes)
+  copy:
+    src: files/circulation.config.json
+    dest: /etc/libsimple/circulation.config.json
+    mode: 0644
+  when: config_file.stat.exists
+
 - name: Ensure circ-deploy docker container is started
   docker_container:
     name: circ-deploy
@@ -10,10 +28,14 @@
     ports:
       - 80:80
     volumes:
-      - /etc/libsimple:/etc/circulation
+      - /etc/libsimple:/etc/libsimple
     env:
       SIMPLIFIED_DB_TASK='migrate'
       SIMPLIFIED_PRODUCTION_DATABASE='postgres://{{ psql_username }}:{{ psql_password }}@{{ psql_endpoint }}:5432/{{ psql_db_name }}'
-    detach: True
+      {% if config_file.stat.exists %}
+      SIMPLIFIED_CONFIGURATION_FILE=/etc/libsimple/circulation.config.json
+      {% endif %}
+
+    detach: true
     state: started
 
