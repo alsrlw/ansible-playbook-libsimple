@@ -9,14 +9,14 @@
       },
       { 
         "full_name" : "General Fiction",
-        "audiences" : ["Adults", "Young Adult"],
+        "audiences" : ["Adult", "Young Adult"],
         "fiction" : true,
         "exclude_genres" : ["Fantasy", "Mystery", "Romance", "Science Fiction"]
       },
-      {"full_name" : "Fantasy", "genres" : ["Fantasy"], "subgenre_behavior": "collapse"},
-      {"full_name" : "Mysteries", "genres" : ["Mystery"], "subgenre_behavior": "collapse"},
-      {"full_name" : "Romance", "genres" : ["Romance"], "subgenre_behavior": "collapse"},
-      {"full_name" : "Science Fiction", "genres" : ["Science Fiction"], "subgenre_behavior": "collapse"}
+      {"full_name" : "Fantasy", "genres" : ["Fantasy"], "subgenre_behavior": "collapse", "audiences" : ["Adult", "Young Adult"]},
+      {"full_name" : "Mysteries", "genres" : ["Mystery"], "subgenre_behavior": "collapse", "audiences" : ["Adult", "Young Adult"]},
+      {"full_name" : "Romance", "genres" : ["Romance"], "subgenre_behavior": "collapse", "audiences" : ["Adult", "Young Adult"]},
+      {"full_name" : "Science Fiction", "genres" : ["Science Fiction"], "subgenre_behavior": "collapse", "audiences" : ["Adult", "Young Adult"]}
     ]
   }
 }
