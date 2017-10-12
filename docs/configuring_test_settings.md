@@ -98,32 +98,31 @@ For deployments to Amazon Web Services, since this repository uses Ansible alone
 
 There are two Docker containers that provide Circulation Manager services: circ-scripts and circ-deploy. The circ-deploy container actually hosts the application; the circ-scripts container hosts the management scripts. Management scripts that are required to keep the Circulation Manager operating appropriately are already scheduled to run periodically.
 
-However, the script which controls OPDS feed imports is not run automatically. To access the proper Docker container and execute the script, run the following command on the host:
+However, the script which controls OPDS feed imports is not run automatically. To access the proper Docker container and execute the script, first connect to a console session inside the container. Issue the command:
 ```
-sudo docker exec circ-scripts ../core/run /var/www/circulation/bin/opds_import_monitor >> /var/log/cron.log 2>&1
+sudo docker exec -it circ-scripts /bin/bash
+```
+
+Once you receive a command prompt in the container, you can begin the import process by running the following command:
+```
+../core/bin/run opds_import_monitor >> /var/log/cron.log 2>&1
 ```
 
 The test collection, at the time of this writing, has about 70+ titles. Give the server fifteen minutes or so to complete importing the works from the feed.
 
 Once the import process is complete, if you wish to review the import logs, execute the following command:
 ```
-sudo docker exec circ-scripts cat /var/log/libsimple/opds_import_monitor.log
+cat /var/log/libsimple/opds_import_monitor.log
 ```
 
 After the title data is imported from the feed, the views of the collection may need to be "refreshed" before those titles will be available in the OPDS feed to the SimplyE app. However, the script to refresh the views only runs every 6 hours. To run the script manually, execute the following command:
 ```
-sudo docker exec circ-scripts ../core/run /var/www/circulation/bin/refresh_materialized_views >> /var/log/cron.log 2>&1
+../core/bin/run refresh_materialized_views >> /var/log/cron.log 2>&1
 ```
 
-## Logging into the Docker Container Directly ##
-Instead of issuing the long commands in the previous section, you may wish to log into a console session inside the container. Issue the command:
+Once the "refresh" script is complete, you can return to the host by running the command:
 ```
-sudo docker exec -it circ-scripts /bin/bash
-```
-
-Once you receive a command prompt in the container, you can then run the above commands directly, without a docker reference. Using the first OPDS import command as an example:
-```
-../core/run /var/www/circulation/bin/opds_import_monitor >> /var/log/cron.log 2>&1
+exit
 ```
 
 ## Configuring Custom Lanes for the SimplyE Mobile App ##
