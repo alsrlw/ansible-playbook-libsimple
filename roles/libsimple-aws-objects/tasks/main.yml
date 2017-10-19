@@ -102,7 +102,7 @@
 
 # AWS EC2 Security Group:
 
-- name: Ensure security group exists and open SSH port to the ansible control machine
+- name: Ensure security group exists and open SSH port from the ansible control machine
   ec2_group:
     name: "EC2-{{ libsimple_server_type }}-{{ libsimple_instance_name }}"
     description: "Firewall rules for the {{ libsimple_server_type }}-{{ libsimple_instance_name }} EC2 instance"
@@ -113,6 +113,10 @@
         from_port: 22
         to_port: 22
         cidr_ip: "{{ admin_ip }}/32"
+      - proto: tcp
+        from_port: 80
+        to_port: 80
+        cidr_ip: "0.0.0.0/0"
   register: ec2_sg
 
 # AWS EC2 instance:

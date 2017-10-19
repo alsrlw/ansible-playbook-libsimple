@@ -37,7 +37,7 @@ You also need the domain name for which you created a DNS entry in the previous 
 	* Currently only the Elasticsearch server is supported, so the default *Protocol* item is appropriate.
 	* Enter the URL to your Elasticsearch service:
 		* for testing Virtualbox and Linode (single-server) implementations, enter the internal container IP-based URL, "http://172.17.0.2:9200".
-		* for testing AWS implementations using the AWS ES service, enter the URL to the Elasticsearch server as shown in your ES service console.
+		* for testing AWS implementations using the AWS ES service, enter the URL to the Elasticsearch server as shown in your ES service console (of the form https://search-{{ ec2_es_domain_name }}-[aws-unique-id].[aws-region].es.amazonaws.com).
     * Unless there is a local reason to change it, leave the default Elasticsearch index name as "works".
     * Click the *Submit* button.
 4. Create a Metadata Wrangler integration:

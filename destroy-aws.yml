@@ -6,8 +6,8 @@
 - hosts: localhost
   connection: local
 
-  vars:
-    - aws_region: "us-east-2"
+  vars_files:
+    - roles/libsimple-aws-objects/defaults/main.yml
 
   tasks:
     - name: Remove RDS Instance
