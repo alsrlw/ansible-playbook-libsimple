@@ -22,9 +22,24 @@ ansible --version
 3. Clone this repository to the control machine
 4. Copy the file in `group_vars/all/main.yml.sample` to `group_vars/all/main.yml` and add your own values inside the blank quotes.
 5. Copy the file `Vagrantfile.virtualbox` to `Vagrantfile`
-6. Open a terminal, `cd` into the repository root directory, and run:
+6. Open a terminal, `cd` into the repository root directory.
+7. Install the external roles required for the project:
 ```
 ansible-galaxy install -r roles.yml
+```
+8. Temporary tasks:
+	* If you wish to use the temporary playbook included in the repository:
+		- Copy the temporary variables file (default values are appropriate for the initial VirtualBox server):
+```
+cp vars/temp_vars.yml.sample vars/temp_vars.yml
+```
+		- Open the `provision-temp.yml` playbook and see if there are any tasks you'd like to add or change, if desired.
+	* If you wish not to run the temporary playbook, simply remove that file:
+```
+rm provision-temp.yml
+```
+9. Run the Vagrant command to spin up the test server:
+```
 vagrant up
 ```
 
@@ -68,6 +83,22 @@ aws_secret_access_key = YOUR_AWS_SECRET_ACCESS_KEY
 8. Open a terminal, `cd` into the repository root directory, and run:
 ```
 ansible-galaxy install -r roles.yml
+```
+9. Temporary tasks:
+	* If you wish to use the temporary playbook included in the repository:
+		- Copy the temporary variables file:
+```
+cp vars/temp_vars.yml.sample vars/temp_vars.yml
+```
+		- Open the `vars/temp_vars.yml` file and change the default values to 'no' for both the `es_local` and `pg_local` variables. In AWS, these services are configured as external services, not as containers on the local Circulation Manager host. 
+		- Open the `provision-temp.yml` playbook and see if there are any tasks you'd like to add or change, if desired.
+	
+    * If you wish not to run the temporary playbook, simply remove that file:
+```
+rm provision-temp.yml
+```
+10. Execute the playbook:
+```
 ansible-playbook -i localhost provision-aws.yml -vv
 ```
 
@@ -137,16 +168,33 @@ ssh-keygen -t rsa -b 4096 -f ~/.ssh/scm_linode_test1
 17. Generate a crypted password for your admin user password:
     `python -c 'import crypt,getpass; print(crypt.crypt(getpass.getpass(), crypt.mksalt(crypt.METHOD_SHA512)))'`
 18. Copy the printed crypted value from the output of #17 into the appropriate variable value in `vars/linode_vars.yml`.
-19. Install a standard Ansible role from the Galaxy repository: `ansible-galaxy install -r roles.yml`
-20. Execute the Vagrant file to create and provision the server: `vagrant up`
+19. Install a standard Ansible role from the Galaxy repository:
+```
+ansible-galaxy install -r roles.yml
+```
+20. Temporary tasks:
+	* If you wish to use the temporary playbook included in the repository:
+		- Copy the temporary variables file (default values are appropriate for the initial VirtualBox server):
+```
+cp vars/temp_vars.yml.sample vars/temp_vars.yml
+```
+		- Open the `provision-temp.yml` playbook and see if there are any tasks you'd like to add or change, if desired.
+	* If you wish not to run the temporary playbook, simply remove that file:
+```
+rm provision-temp.yml
+```
+21. Execute the Vagrant file to create and provision the server:
+```
+vagrant up
+```
 
 ### Accessing the Server Console
 There are two methods of accessing the new server's console (beside the web-based LISH console in the Linode Manager screen):
 1. Using Vagrant, where you will be logged in as the root user: `vagrant ssh`
 2. Using an SSH client, where you will be logged in as the admin user configured from your variable settings
 	* You will need the admin_username and the admin_ssh_keyname values you set in `vars/linode_vars.yml`
-	* You will also needthe IP address of the new server (displayed in the Vagrant output or in the Linode Manager panel)
-	* Using the command line SSH utility: `ssh <admin_username>@<ip-address> -i ~/.ssh/<admin_ssh_keyname>` 
+	* You will also need the IP address of the new server (displayed in the Vagrant output or in the Linode Manager panel)
+	* Connecting via the command line SSH utility: `ssh <admin_username>@<ip-address> -i ~/.ssh/<admin_ssh_keyname>`
 
 ### Remove the Virtual Server
 To remove the virtual server you've created at Linode:
@@ -156,3 +204,8 @@ To remove the virtual server you've created at Linode:
 3. Destroy the server resources: `vagrant destroy`
 
 At this point, you can make whatever changes you may need to the source/configuration files. To re-deploy another server, simply re-issue the `vagrant up` command.
+
+## Temporary Tasks ##
+As mentioned in the instructions above, we've provided a playbook for adding temporary tasks. Initially, this is envisioned as a place to include some optional tasks that help with server administration, but are not yet part (or a completed part) of the Circulation Manager software. For example, as of version 2.0.5 of the Circulation Manager, there is no specified way to stop and start the project's Docker containers. And, should the server suffer a problem where it reboots, the services are not restarted automatically. We have included a set of files that automate the restart at boot time. This serves as a workaround until an official process is included (e.g., adding and testing a Docker restart-policy option).
+
+A second script included will export a file of library registry settings which NYPL staff can use to link a library's Circulation Manager service with the shared NYPL Adobe ID service. Plans are in place to add functionality to the web Admin interface that performs this task automatically. As soon as it is ready for production, this second task and script will be removed from the playbook.
