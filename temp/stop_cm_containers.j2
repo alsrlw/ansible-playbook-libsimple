@@ -1,0 +1,16 @@
+#!/bin/bash
+# Circulation Manager Docker Containers Stop
+
+# Variables set with values from the Ansible project variables file
+STOP_ES="{{ es_local }}"
+STOP_PG="{{ pg_local }}"
+
+# Start each Docker container
+docker stop circ-deploy
+docker stop circ-scripts
+if [ "$STOP_PG" = "yes" ]; then
+  docker stop pg
+fi
+if [ "$STOP_ES" = "yes" ]; then
+  docker stop es
+fi

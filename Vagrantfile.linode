@@ -64,15 +64,22 @@ Vagrant.configure(2) do |config|
   
   # Ansible provisioners to add base utilities and users, then install SCM services
   
-   config.vm.provision "confighost", type: "ansible" do |ansible1|
+  config.vm.provision "confighost", type: "ansible" do |ansible1|
     ansible1.verbose = "vv"
     ansible1.playbook = "linode-configure.yml"
-   end
+  end
    
-   config.vm.provision "loadservices", type: "ansible" do |ansible2|
+  config.vm.provision "loadservices", type: "ansible" do |ansible2|
     ansible2.verbose = "vv"
     ansible2.playbook = "provision-vagrant.yml"
-   end
+  end
+
+  if(File.exist?('provision-temp.yml')) 
+    config.vm.provision "temptasks", type: "ansible" do |ansible3|
+      ansible3.verbose = "vv"
+      ansible3.playbook = "provision-temp.yml"
+    end
+  end
 
   # Shell provisioner to create admin user .ssh directory
   DirName = "/home/" + settings['admin_username'] + "/.ssh"

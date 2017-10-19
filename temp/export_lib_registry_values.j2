@@ -1,0 +1,42 @@
+#!/bin/bash
+# Export configuration setting keys/values produced by registering a library
+# with the NYPL SimplyE library registry.
+#
+# Purpose: temporary solution for enabling NYPL developer staff to connect
+#   an independent library's SimplyE collection to the NYPL Adobe ID service
+#   for DRMed fulfillments. 
+# 
+# Robert L. Williams
+# Amigos Library Services
+#
+
+# Test for library shortname parameter given
+if [ -z "$1" ]; then
+  echo "No library shortname provided. Check the admin panel"
+  echo "for the library's shortname."
+  exit 1
+fi
+
+# Otherwise, set variables needed to 
+LIBCODE=$1
+DBHOST="{{ psql_endpoint }}"
+DBNAME="{{ psql_db_name }}"
+CSVFILE=$LIBCODE"_registered.csv"
+CSVPATH="/tmp/"$CSVFILE
+
+# Produce CSV export file on local host
+psql -U postgres -h $DBHOST -d $DBNAME -c "\copy (select cs.key, cs.value
+  from libraries as l
+  left join externalintegrations_libraries as eil on eil.library_id = l.id
+  left join externalintegrations as ei on ei.id = eil.externalintegration_id
+  left join configurationsettings as cs on cs.external_integration_id = ei.id
+  where l.short_name = '$LIBCODE' and ei.protocol = 'api.simple_authentication'
+) TO '$CSVPATH' DELIMITER ',' CSV HEADER"
+EXIT_CODE=$?
+
+if [ $EXIT_CODE -eq 0 ]; then
+  echo "The CSV file is stored at $CSVPATH"
+else
+  echo "There was an error exporting the CSV file."
+  exit 1
+fi

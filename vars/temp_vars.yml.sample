@@ -1,0 +1,7 @@
+---
+# Variables for Temp Tasks
+
+# default; for AWS using ES service, or multi-server deploys, set to no
+es_local: "yes"
+# default; for AWS using RDS service, or multi-server deploys, set to no
+pg_local: "yes"

@@ -1,0 +1,20 @@
+#!/bin/bash
+# Circulation Manager Docker Container Startup
+# called in crontab upon server reboot to restart CM services
+
+# Variables set with values from the Ansible project variables file
+START_ES="{{ es_local }}"
+START_PG="{{ pg_local }}"
+
+# Add a wait period to give the Docker service time to start
+sleep 5
+
+# Start each Docker container
+if [ "$START_ES" = "yes" ]; then
+  docker start es
+fi
+if [ "$START_PG" = "yes" ]; then
+  docker start pg
+fi
+docker start circ-scripts
+docker start circ-deploy

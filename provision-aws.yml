@@ -17,3 +17,9 @@
     - libsimple-container-circ-scripts
     - libsimple-container-circ-deploy
 
+- name: Check whether a manual configuration file exists locally
+  local_action: stat path="./provision-temp.yml"
+  register: temp_plays
+  
+- import_playbook: provision-temp.yml
+  when: temp_plays.stat.exists
