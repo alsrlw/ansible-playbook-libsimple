@@ -4,7 +4,7 @@
 # Used until similar official Circulation Manager features are added
 
 - name: Add temporary utilities to support the Circulation Manager
-  hosts: localhost
+  hosts: all
   vars_files:
     - vars/temp_vars.yml
 
