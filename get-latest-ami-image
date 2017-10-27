@@ -1,0 +1,85 @@
+#!/bin/bash
+#----------------------------------------------------
+# Find latest AWS AMI image ID for Distribution
+#----------------------------------------------------
+# 
+# Robert L. Williams
+# Amigos Library Services
+# Copyright (c) 2017
+# MIT license
+#
+# NOTES:
+# Credit: Mike Farah, author of yaml processing utility
+# https://github.com/mikefarah/yaml
+#
+# Credit: Centos.org
+# AWS Search command based on help provided at Centos.org site:
+# https://wiki.centos.org/Cloud/AWS
+#
+# Also, to the following site for help in chaining JMESpath statements in the
+# the aws ec2 query and sorting/parsing the results to obtain the latest
+# version of the specified dist.
+# http://opensourceconnections.com/blog/2015/07/27/advanced-aws-cli-jmespath-query/
+
+
+if [ -z $1 ]; then
+    echo "You forgot to specify a Linux distribution name:"
+    echo $"Usage: $0 {centos|debian|amazon} [{listall|latest}] [aws_region_id]"
+    exit 1
+fi
+
+# Lowercase the OS code input, just in case it includes an initial capital letter
+OS_CODE=${1,,}
+
+# The following cases set a literal string used by the image creators in
+# their various AMI images' Description metadata field. These strings are
+# subject to change from time to time, so review/revision is likely required.
+case "$OS_CODE" in
+        centos)
+            OS_DESC='CentOS Linux'
+            ;;
+         
+        debian)
+            OS_DESC='Debian'
+            ;;
+         
+        amazon)
+            OS_DESC='Amazon'
+            ;;
+        *)
+            echo $"Usage: $0 {centos|debian|amazon} [{listall|latest}] [aws_region_id]"
+            exit 1
+esac
+
+# See if there is an AWS region specified, and, if not, use the AWS region in the role
+if [ -z $3 ]; then
+    # Use the AWS region specified in the included AWS role
+    AWS_REGION=$(./yaml r roles/libsimple-aws-objects/defaults/main.yml aws_region)
+    # Or just specify the AWS default?
+    # AWS_REGION='us-east-1'
+else
+    AWS_REGION="$3"
+fi
+
+# Generate the JMESpath query for the search
+QUERY_STR='Images[?Description!=`null`]|[?starts_with(Description, `'$OS_DESC'`) == `true`].[ImageId, CreationDate, Name, Description]'
+
+# Perform the AMI image lookup; capture and transform the output to produce
+# the desired output.
+if [ "$2" == 'listall' ]; then
+    # Produce the full list of available AMI images for the distribution
+    aws ec2 describe-images --region $AWS_REGION --owners aws-marketplace --query "$QUERY_STR" --output text | sort -k 2
+else
+    if [ "$2" != 'latest' ]; then
+        echo "The list parameter must be 'listall' or 'latest'"
+        echo $"Usage: $0 {centos|debian|amazon} [{listall|latest}] [aws_region_id]"
+        exit 1
+    else
+        # Produce only a single AMI ID, the latest created
+        aws ec2 describe-images --region $AWS_REGION --owners aws-marketplace --query "$QUERY_STR" --output text | sort -k 2 | tail -n 1 | awk '{print $1}'
+    fi
+fi
+
+# Another full sample; with output that will help determine proper literal strings
+# to use for the case statements above.
+# aws ec2 describe-images --region us-east-2 --owners aws-marketplace --query 'Images[?Description!=`null`]|[?starts_with(Description, `Debian`) == `true`].{ID:ImageId, RootDevice:RootDeviceType, Name:Name, Date:CreationDate, Desc:Description}' --output json

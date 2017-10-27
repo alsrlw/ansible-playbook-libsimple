@@ -77,27 +77,38 @@ aws_access_key_id = YOUR_AWS_ACCESS_KEY
 aws_secret_access_key = YOUR_AWS_SECRET_ACCESS_KEY
 ```
 4. Clone this repository to your control machine
-5. Make a Bash script executable: `chmod +x ./aws-destroy`
-6. Copy the file `group_vars/all/main.yml.sample` to `group_vars/all/main.yml` and add your own values inside the blank quotes. 
-7. Copy the file `roles/libsimple-aws-objects/defaults/main.yml.sample` to `roles/libsimple-aws-objects/default/main.yml`, add the appropriate AWS account number, and adjust other values as needed. 
-8. Open a terminal, `cd` into the repository root directory, and run:
+5. Open a terminal and `cd` into the repository root directory.
+6. Make a Bash script executable: `chmod +x ./aws-destroy`
+7. Copy the file `group_vars/all/main.yml.sample` to `group_vars/all/main.yml` (and edit to supply your own values where needed).
+```
+cp group_vars/all/main.yml.sample group_vars/all/main.yml
+```
+8. Copy the file `roles/libsimple-aws-objects/defaults/main.yml.sample` to `roles/libsimple-aws-objects/default/main.yml` (and edit to supply your own values where needed).
+```
+cp roles/libsimple-aws-objects/defaults/main.yml.sample roles/libsimple-aws-objects/defaults/main.yml
+```
+9. ***NOTE:*** The default `ec2_image` value in the AWS defaults variables file is the latest AMI image *in the default us-east-1 region* for CentOS 7 as of the time of commiting the file. To determine the proper AMI image ID for the region and Linux distribution, use the `get-latest-ami-image` script located in the project root directory. As an example:
+```
+./get-latest-ami-image centos latest us-east-2
+```
+Be sure to update the region and availability zone variables as needed as well.
+10. Include a required Ansible role by issuing the command:
 ```
 ansible-galaxy install -r roles.yml
 ```
-9. Temporary tasks:
+11. Temporary tasks:
 	* If you wish to use the temporary playbook included in the repository:
 		- Copy the temporary variables file:
 ```
 cp vars/temp_vars.yml.sample vars/temp_vars.yml
 ```
-		- Open the `vars/temp_vars.yml` file and change the default values to 'no' for both the `es_local` and `pg_local` variables. In AWS, these services are configured as external services, not as containers on the local Circulation Manager host. 
+		- Open the `vars/temp_vars.yml` file and change the default values to 'no' for both the `es_local` and `pg_local` variables. In AWS, these services are configured as external services, not as containers on the local Circulation Manager host.
 		- Open the `provision-temp.yml` playbook and see if there are any tasks you'd like to add or change, if desired.
-	
     * If you wish not to run the temporary playbook, simply remove that file:
 ```
 rm provision-temp.yml
 ```
-10. Execute the playbook:
+12. Execute the playbook:
 ```
 ansible-playbook -i localhost provision-aws.yml -vv
 ```

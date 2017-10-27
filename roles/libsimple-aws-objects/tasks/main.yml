@@ -119,7 +119,40 @@
         cidr_ip: "0.0.0.0/0"
   register: ec2_sg
 
-# AWS EC2 instance:
+# CHECK/USE AVAILABLE EC2 IMAGE
+# Search for the AMI specified in the AWS role
+- name: Determine whether specified ec2_image ID is available
+  ec2_ami_find:
+    owner: aws-marketplace
+    region: "{{ aws_region }}"
+    ami_id: "{{ ec2_image }}"
+  register: ami_find1
+
+# Search for the latest Ubuntu 14.04 AMI
+- name: If original image is not available, search for latest image
+  ec2_ami_find:
+    region: "{{ aws_region }}"
+    name: "{{ ec2_image_type }}*"
+    sort: creationDate
+    sort_order: descending
+    sort_end: 1
+  register: ami_find2
+  when: ami_find1.results|length == 0
+
+# Set proper AMI image ID
+- name: Set proper AMI image ID
+  set_fact:
+    os_image_id: "{{ ami_find1.results.0.ami_id  }}"
+  when: ami_find1.results|length > 0
+
+- set_fact:
+    os_image_id: "{{ ami_find2.results.0.ami_id }}"
+  when: (ami_find2.results is defined and ami_find2.results|length > 0)
+
+- debug:
+    msg: "Using {{ ec2_image_type }} image id: {{ os_image_id }}"
+
+# Create AWS EC2 instance:
 
 - name: Ensure EC2 instance exists with tag "{{ libsimple_server_type }}-{{ libsimple_instance_name }}"
   local_action:
@@ -134,7 +167,7 @@
     instance_tags: '{"Name":"{{ libsimple_server_type }}-{{ libsimple_instance_name }}","Type":"{{ libsimple_server_type }}","Environment":"{{ libsimple_environment }}"}'
     key_name: "{{ libsimple_instance_name }}"
     group_id: "{{ ec2_sg.group_id }}"
-    image: "{{ ec2_image }}"
+    image: "{{ os_image_id }}"
     vpc_subnet_id: "{{ vpc_subnet_1_id }}"
     assign_public_ip: yes
 # May need to create swap volume

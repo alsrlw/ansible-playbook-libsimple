@@ -13,14 +13,18 @@ aws_az_3: "us-east-1c"
 # AWS EC2
 # The t2.micro falls under the AWS Free Tier; increase as needed for testing
 ec2_instance_type: "t2.micro"
+
 # Initial operating system AMI image: Amazon Linux
 # Image below is the current Amazon-provided Amazon Linux image, as of time
-# of commit. You may need to verify it is still available, or find the ID 
-# of the latest version of the image.
+# of commit.
+#ec2_image_type: "Amazon"
 #ec2_image: "ami-8a7859ef"
-# Currently tested image below is latest Amazon Marketplace CentOS7 current 
-# image, as of writing:
-ec2_image: "ami-18f8df7d"
+# Currently tested image below is latest Amazon Marketplace CentOS7 as of commit
+ec2_image_type: "CentOS Linux"
+ec2_image: "ami-db48ada1"
+# To find the latest image IDs, use the get-latest-ami-image script in the root
+# of this repository
+
 # Size in gigabytes of Elastic Block Storage to allocate (fits under Free Tier)
 # Increase as needed
 ec2_volume_size: 10
