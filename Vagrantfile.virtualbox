@@ -49,7 +49,7 @@ Vagrant.configure(2) do |config|
     ansible.playbook = "provision-vagrant.yml"
   end
   
-  if(File.exist?('provision-temp.yml')) 
+  if(File.exist?('temporary-tasks.yml')) 
     config.vm.provision "temptasks", type: "ansible" do |ansible3|
       ansible3.verbose = "vv"
       ansible3.playbook = "provision-temp.yml"

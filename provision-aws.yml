@@ -28,9 +28,9 @@
 
   tasks:
     - name: Check whether a manual configuration file exists locally
-      local_action: stat path=provision-temp.yml
+      local_action: stat path=temporary-tasks.yml
       register: temp_plays
 
-    - include: provision-temp.yml
+    - include: temporary-tasks.yml
       when: temp_plays.stat.exists
 
