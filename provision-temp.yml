@@ -3,12 +3,6 @@
 #
 # Used until similar official Circulation Manager features are added
 
-- name: Add temporary utilities to support the Circulation Manager
-  hosts: all
-  vars_files:
-    - vars/temp_vars.yml
-
-  tasks:
     - set_fact:
         psql_endpoint: "{{ hostvars['localhost']['psql_endpoint'] }}"
       when: hostvars['localhost']['psql_endpoint'] is defined
@@ -20,25 +14,25 @@
     - name: Create an Adobe registration parameters script, with host and DB info 
       template:
         src: "temp/export_lib_registry_values.j2"
-        dest: "/root/export_lib_registry_values"
-        owner: root
-        group: root
+        dest: "/home/{{ ec2_user }}/export_lib_registry_values"
+        owner: "{{ ec2_user }}"
+        group: "{{ ec2_user }}"
         mode: 0770
 
     - name: Create a script to start Docker containers
       template:
         src: "temp/start_cm_containers.j2"
-        dest: "/root/start_cm_containers"
-        owner: root
-        group: root
+        dest: "/home/{{ ec2_user }}/start_cm_containers"
+        owner: "{{ ec2_user }}"
+        group: "{{ ec2_user }}"
         mode: 0770
 
     - name: Create a script to stop Docker containers
       template:
         src: "temp/stop_cm_containers.j2"
-        dest: "/root/stop_cm_containers"
-        owner: root
-        group: root
+        dest: "/home/{{ ec2_user }}/stop_cm_containers"
+        owner: "{{ ec2_user }}"
+        group: "{{ ec2_user }}"
         mode: 0770
 
     - name: Create a cron task to restart the Circulation Manager containers after a reboot
@@ -47,4 +41,4 @@
         cron_file: temporary_cm
         special_time: reboot
         user: root
-        job: "/root/start_cm_containers"
+        job: "/home/{{ ec2_user }}/start_cm_containers"

@@ -17,11 +17,20 @@
     - libsimple-container-circ-scripts
     - libsimple-container-circ-deploy
 
+- name: Add temporary utilities to support the Circulation Manager if playbook exists
+  hosts: circulation-servers
+  remote_user: "{{ ec2_initial_user }}"
+  become: yes
+
+  vars_files:
+    - vars/temp_vars.yml
+    - group_vars/all/main.yml
+
   tasks:
     - name: Check whether a manual configuration file exists locally
       local_action: stat path=provision-temp.yml
       register: temp_plays
 
-- name: Perform temporary tasks
-  include: provision-temp.yml
-  when: temp_plays.stat.exists
+    - include: provision-temp.yml
+      when: temp_plays.stat.exists
+

@@ -17,7 +17,6 @@ This repository includes a Vagrant configuration file which will create the targ
 ```
 ansible --version
 ```
-
 2. [Install Vagrant](https://www.vagrantup.com/docs/installation/) as well as a compatible hypervisor (VirtualBox, VMware, etc.)
 3. Clone this repository to the control machine
 4. Copy the file in `group_vars/all/main.yml.sample` to `group_vars/all/main.yml` and add your own values inside the blank quotes.
@@ -78,7 +77,11 @@ aws_secret_access_key = YOUR_AWS_SECRET_ACCESS_KEY
 ```
 4. Clone this repository to your control machine
 5. Open a terminal and `cd` into the repository root directory.
-6. Make a Bash script executable: `chmod +x ./aws-destroy`
+6. Make Bash scripts executable:
+```
+chmod +x ./aws-destroy
+chmod +x ./get-latest-ami-image
+```
 7. Copy the file `group_vars/all/main.yml.sample` to `group_vars/all/main.yml` (and edit to supply your own values where needed).
 ```
 cp group_vars/all/main.yml.sample group_vars/all/main.yml
@@ -91,7 +94,8 @@ cp roles/libsimple-aws-objects/defaults/main.yml.sample roles/libsimple-aws-obje
 ```
 ./get-latest-ami-image centos latest us-east-2
 ```
-Be sure to update the region and availability zone variables as needed as well.
+	Be sure to update the region and availability zone variables as needed as well.
+
 10. Include a required Ansible role by issuing the command:
 ```
 ansible-galaxy install -r roles.yml
