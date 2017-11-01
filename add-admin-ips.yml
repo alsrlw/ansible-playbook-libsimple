@@ -1,0 +1,22 @@
+---
+# Playbook to add more admin IP addresses to Circulation Manager host security group
+- name: Adding admin IP addresses
+  hosts: localhost
+  connection: local
+  vars_files:
+    - group_vars/all/main.yml
+    - roles/libsimple-aws-objects/defaults/main.yml
+  
+  tasks:
+  - name: Add inbound security group rules for new IP addresses to the EC2 Security Group
+    ec2_group:
+      name: "EC2-{{ libsimple_server_type }}-{{ libsimple_instance_name }}"
+      description: "Firewall rules for the {{ libsimple_server_type }}-{{ libsimple_instance_name }} EC2 instance"
+      region: "{{ aws_region }}"
+      purge_rules: no
+      rules:
+        - proto: tcp
+          from_port: 22
+          to_port: 22
+          cidr_ip: "{{ item }}"
+    with_items: "{{ additional_admin_cidrs }}"

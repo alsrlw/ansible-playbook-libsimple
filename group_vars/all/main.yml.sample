@@ -1,5 +1,15 @@
 ---
+# The public IP address of the initial Ansible control machine
+# which will have SSH access to the AWS Circulation Manager host(s)
 admin_ip: "" # e.g. your local admin workstation's public IP
+
+# Since IP ranges can be specified in the rules structure, the additional IPs
+# take advantage of this and must be written in CIDR notation; one or more
+# CIDR statements can be listed (only one is shown in default list below)
+# These additional IPs are referenced/added in the auxiliary add-admin-ips.yml playbook
+additional_admin_cidrs:
+    - "/32" # e.g., admin's home LAN's public IP (single IP)
+
 # Instance information
 libsimple_instance_name: "MyLibrary"
 libsimple_server_type: "circulation"
