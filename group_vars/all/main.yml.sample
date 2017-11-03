@@ -33,3 +33,12 @@ psql_password: ""
 
 # Docker containers
 system_timezone: ""
+# Initial Docker network values; you can change to fit your need
+# Possibly a good idea NOT to duplicate the Docker default network base
+# value shown in comments
+network_name: "circnet1"
+network_base_ip: "172.18.0.0"    # default network base is 172.17.0.0;
+network_gateway_ip: "172.18.0.1" # should be first or last IP in the range
+network_mask_bits: "24"          # default network is 16; but this can be a smaller network
+elasticsearch_ip: "172.18.0.11"
+postgres_ip: "172.18.0.12"

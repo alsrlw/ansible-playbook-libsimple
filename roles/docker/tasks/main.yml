@@ -1,0 +1,24 @@
+---
+- name: Install docker software
+  yum:
+    pkg: "docker"
+    disable_gpg_check: yes
+    state: present
+
+- name: Start the docker service and enable it at boot
+  systemd:
+    name: docker
+    state: started
+    enabled: True
+
+- name: Ensure docker-py is not present
+  pip:
+    name: docker-py
+    state: absent
+
+- name: Install docker python module
+  pip:
+#    name: "docker-compose==1.12.0"
+    name: "docker-compose"
+
+

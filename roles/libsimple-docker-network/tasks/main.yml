@@ -1,0 +1,10 @@
+---
+# Create a Custom Docker Network to Administer Static IPs
+
+- name: Ensure custom Docker network exists, with specified options
+  docker_network:
+    name: "{{ network_name }}"
+    ipam_options:
+      subnet: "{{ network_base_ip }}/{{ network_mask_bits }}"
+      gateway: "{{ network_gateway_ip }}"
+      iprange: "{{ network_gateway_ip }}/{{ network_mask_bits }}"

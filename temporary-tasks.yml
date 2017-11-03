@@ -8,37 +8,57 @@
       when: hostvars['localhost']['psql_endpoint'] is defined
       
     - set_fact:
-        psql_endpoint: "172.17.0.3"
+        psql_endpoint: "{{ postgres_ip }}"
       when: hostvars['localhost']['psql_endpoint'] is not defined
+
+    - set_fact:
+        ssh_username: "{{ ec2_initial_user }}"
+      when: aws_account is defined
+
+    - set_fact:
+        ssh_username: "{{ admin_username }}"
+      when: linode_api_key is defined
+
+    - set_fact:
+        ssh_username: "vagrant"
+      when: (aws_account is not defined) and (linode_api_key is not defined)
       
     - name: Create an Adobe registration parameters script, with host and DB info 
       template:
         src: "temp/export_lib_registry_values.j2"
-        dest: "/home/{{ ec2_user }}/export_lib_registry_values"
-        owner: "{{ ec2_user }}"
-        group: "{{ ec2_user }}"
+        dest: "/home/{{ ssh_username }}/export_lib_registry_values"
+        owner: "{{ ssh_username }}"
+        group: "{{ ssh_username }}"
         mode: 0770
 
     - name: Create a script to start Docker containers
       template:
         src: "temp/start_cm_containers.j2"
-        dest: "/home/{{ ec2_user }}/start_cm_containers"
-        owner: "{{ ec2_user }}"
-        group: "{{ ec2_user }}"
+        dest: "/home/{{ ssh_username }}/start_cm_containers"
+        owner: "{{ ssh_username }}"
+        group: "{{ ssh_username }}"
         mode: 0770
 
     - name: Create a script to stop Docker containers
       template:
         src: "temp/stop_cm_containers.j2"
-        dest: "/home/{{ ec2_user }}/stop_cm_containers"
-        owner: "{{ ec2_user }}"
-        group: "{{ ec2_user }}"
+        dest: "/home/{{ ssh_username }}/stop_cm_containers"
+        owner: "{{ ssh_username }}"
+        group: "{{ ssh_username }}"
         mode: 0770
 
-    - name: Create a cron task to restart the Circulation Manager containers after a reboot
-      cron:
-        name: "Restart Circulation Manager"
-        cron_file: temporary_cm
-        special_time: reboot
-        user: root
-        job: "/home/{{ ec2_user }}/start_cm_containers"
+#    - name: Create a cron task to restart the Circulation Manager containers after a reboot
+#      cron:
+#        name: "Restart Circulation Manager"
+#        cron_file: temporary_cm
+#        special_time: reboot
+#        user: root
+#        job: "/home/{{ ssh_username }}/start_cm_containers"
+
+    - name: Create a cron task file if needed later to restart the Circulation Manager containers after a reboot
+      copy:
+        src: "temp/temporary_cm"
+        dest: "/home/{{ ssh_username }}/temporary_cm"
+        owner: "root"
+        group: "root"
+        mode: 0750

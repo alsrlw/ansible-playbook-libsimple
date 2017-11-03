@@ -25,6 +25,12 @@
       with_items:
         - htop
         - tmux
+        - python-pip
+
+    - name: Upgrade pip
+      pip:
+        name: pip
+        extra_args: --upgrade        
 
     # Add admin user (not root) with sudo privileges
     - name: Add administrative user for remote login

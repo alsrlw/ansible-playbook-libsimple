@@ -1,0 +1,2 @@
+#Ansible: Restart Circulation Manager
+@reboot root /home/sysadmin/start_cm_containers

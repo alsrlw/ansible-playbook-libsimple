@@ -25,6 +25,11 @@
     name: circ-deploy
     image: "nypl/circ-deploy:{{ simplye_circulation_version }}"
 
+    networks:
+      - name: "{{ network_name }}"
+    purge_networks: yes
+
+    restart_policy: "unless-stopped"
     ports:
       - 80:80
     volumes:

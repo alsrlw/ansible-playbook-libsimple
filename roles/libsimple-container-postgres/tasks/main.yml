@@ -2,7 +2,7 @@
 # Adapted from NYPL-Simplified instructions "Deployment: Quickstart with Docker" 
 # https://github.com/NYPL-Simplified/Simplified/wiki/Deployment:-Quickstart-with-Docker#postgres-optional-support-container
 
-# Ensure that requirements docker-py and psycopg2 are installed 
+# Ensure that required psycopg2 is installed 
 
 - include: setup-RedHat.yml
   when: ansible_os_family == 'RedHat'
@@ -16,11 +16,19 @@
   docker_container:
     name: pg
     image: postgres:9.5
+
+    networks:
+      - name: "{{ network_name }}"
+        ipv4_address: "{{ postgres_ip }}"
+    # Remove any entry for default network
+    purge_networks: yes
+
+    restart_policy: "unless-stopped"
     detach: True
     state: started
   
 - name: Verify IP address of postgres docker container named 'pg'
-  shell: "docker inspect -f '{''{ .NetworkSettings.IPAddress }''}' pg"
+  shell: "docker inspect -f '{''{range .NetworkSettings.Networks}''}''{''{.IPAddress}''}''{''{end}''}' pg"
   register: docker_inspect_pg_ip
   
 - name: Set variable pg_docker_container_ip (used later in config.j2 template)

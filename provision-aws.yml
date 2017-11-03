@@ -22,9 +22,13 @@
   remote_user: "{{ ec2_initial_user }}"
   become: yes
 
+  # The [ ] files list will result in any of the files in the list being loaded
+  # only if it exists; no error will occur if one or more doesn't exist
+  # Values in these extra files are used as sentinels in determining the remote username
   vars_files:
     - vars/temp_vars.yml
     - group_vars/all/main.yml
+    - ["vars/linode_vars.yml", "roles/libsimple-aws-objects/defaults/main.yml"]
 
   tasks:
     - name: Check whether a manual configuration file exists locally

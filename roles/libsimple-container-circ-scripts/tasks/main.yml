@@ -6,6 +6,12 @@
   docker_container:
     name: circ-scripts
     image: "nypl/circ-scripts:{{ simplye_circulation_version }}"
+
+    networks:
+      - name: "{{ network_name }}"
+    purge_networks: yes
+
+    restart_policy: "unless-stopped"
     volumes:
       - /etc/libsimple:/etc/circulation
     env:

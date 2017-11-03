@@ -4,7 +4,9 @@
 - hosts: all
   become: yes
   roles:
-    - geerlingguy.docker
+#    - geerlingguy.docker
+    - docker
+    - libsimple-docker-network
     - libsimple-container-elasticsearch
     - libsimple-container-postgres
     - libsimple-host
