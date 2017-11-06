@@ -108,6 +108,9 @@
     description: "Firewall rules for the {{ libsimple_server_type }}-{{ libsimple_instance_name }} EC2 instance"
     region: "{{ aws_region }}"
     vpc_id: "{{ vpc_id }}"
+    # To preserve any IPs from add-admin-ips.yml upon re-running this playbook:
+    purge_rules: no
+    # Initial rules:
     rules:
       - proto: tcp
         from_port: 22
