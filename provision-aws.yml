@@ -13,6 +13,7 @@
     - psql_endpoint: "{{ hostvars['localhost']['psql_endpoint'] }}"
   roles:
     - geerlingguy.docker
+    - libsimple-docker-network
     - libsimple-host-aws
     - libsimple-container-circ-scripts
     - libsimple-container-circ-deploy
