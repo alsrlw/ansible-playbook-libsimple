@@ -18,6 +18,6 @@
       TZ="{{ system_timezone }}"
       SIMPLIFIED_DB_TASK='migrate'
       SIMPLIFIED_PRODUCTION_DATABASE='postgres://{{ psql_username }}:{{ psql_password }}@{{ psql_endpoint }}:5432/{{ psql_db_name }}'
+      TERM='xterm'
     detach: True
     state: started
-

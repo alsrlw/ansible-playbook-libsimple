@@ -30,7 +30,14 @@
         filters:
           "tag:Name": "{{ libsimple_server_type }}-{{ libsimple_instance_name }}"
       register: ec2_facts
- 
+
+    - name: Get Volumes associated with EC2 instance (prior to termination for later use)
+      ec2_vol_facts:
+        region: "{{ aws_region }}"
+        filters:
+          attachment.instance-id: "{{ ec2_facts.instances[0].id }}"
+      register: volume_info
+
     - name: Terminate EC2 instance
       ec2:
         instance_ids: "{{ item.id }}"
@@ -108,3 +115,10 @@
         cidr_block: "172.42.0.0/16"
         state: absent
 
+    # A snapshot volume associated with the OS AMI image is not removed at termination
+    - name: Ensure all volumes previously associated with the EC2 instance are removed
+      ec2_vol:
+        region: "{{ aws_region }}"
+        id: "{{ item.id }}"
+        state: absent
+      with_items: "{{ volume_info.volumes }}"
