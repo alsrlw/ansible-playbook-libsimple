@@ -27,6 +27,8 @@ ec2_image: "ami-db48ada1"
 
 # Size in gigabytes of Elastic Block Storage to allocate (fits under Free Tier)
 # Increase as needed
+ec2_root_device_type: "gp2"
+ec2_root_device_name: "sda1"
 ec2_volume_size: 10
 
 # AWS RDS
