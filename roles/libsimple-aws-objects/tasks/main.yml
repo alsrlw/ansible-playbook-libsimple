@@ -269,9 +269,9 @@
     username: "{{ psql_username }}"
     password: "{{ psql_password }}"
     parameter_group: "{{ rds_logging_parameter_group }}"
-    backup_window: "{{ rds_backup_window }}"
+    backup_window: "{{ rds_backup_window }}"    # Timezone is UTC
     backup_retention: 1     # one-day default; fine for testing
-    maint_window: "{{ rds_maint_window }}"
+    maint_window: "{{ rds_maint_window }}"      # Timezone is UTC
   register: rds
 
 - set_fact:
