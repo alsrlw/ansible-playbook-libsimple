@@ -131,7 +131,7 @@
     ami_id: "{{ ec2_image }}"
   register: ami_find1
 
-# Search for the latest Ubuntu 14.04 AMI
+# Search for the latest specified AMI
 - name: If original image is not available, search for latest image
   ec2_ami_find:
     region: "{{ aws_region }}"
@@ -161,8 +161,9 @@
   local_action:
     module: ec2
     wait: yes
-    wait_timeout: 600
+    wait_timeout: 1200
     region: "{{ aws_region }}"
+    zone: "{{ aws_az_1 }}"
     instance_type: "{{ ec2_instance_type }}"
     exact_count: 1
     count_tag:
@@ -216,21 +217,49 @@
   register: rds_sg
 - debug: var=rds_sg.group_id
 
+# AWS RDS Parameter Group
+# (deviates from default to enable fuller logging for review during testing)
+
+- name: Ensure PostgreSQL logging is set appropriately for full review of actions
+  rds_param_group:
+    name: "{{ rds_logging_parameter_group }}"
+    description: 'Specific parameters to enable broader logging'
+    region: "{{ aws_region }}"
+    state: present
+    engine: "{{ rds_engine_type }}{{ rds_engine_version }}"
+    params:
+      log_statement: "all"          # options include: none (errors), all, ddl, or mod
+      log_min_duration_statement: 0 # zero indicates include all durations (not slow log)
+      log_duration: 1               # add duration to all queries
+      log_timezone: "{{ rds_log_timezone }}"
+    immediate: yes
+#   tags:
+#      Environment: testing
+#      Application: ''
+
+# Add a wait period for parameter group to be added (docs say up to 5 minutes)
+- name: Wait five minutes for parameter group to be available
+  wait_for: timeout=300
+  delegate_to: localhost
+
 # AWS RDS Database:
 
 - name: Ensure PostgreSQL database exists in AWS RDS
   rds:
     command: create
     wait: yes
-    wait_timeout: 600
+    wait_timeout: 1200
     instance_name: "{{ libsimple_server_type }}-{{ libsimple_instance_name.replace(' ','-') }}"
     tags:
       Environment: "{{ libsimple_environment }}"
       Application: "{{ libsimple_server_type }}"
     region: "{{ aws_region }}"
+    zone: "{{ rds_instance_primary_zone }}"
     instance_type: "{{ rds_instance_type }}"
-    db_engine: postgres
+    db_engine: "{{ rds_engine_type }}"
+    engine_version: "{{ rds_engine_version }}"
     size: "{{ rds_size }}"
+#    iops: "{{ rds_iops }}" # only when storage type io1 is used; not currently supported
     subnet: libsimple-postgres
     vpc_security_groups: "{{ rds_sg.group_id }}"
     multi_zone: no
@@ -239,6 +268,10 @@
     db_name: "{{ psql_db_name }}"
     username: "{{ psql_username }}"
     password: "{{ psql_password }}"
+    parameter_group: "{{ rds_logging_parameter_group }}"
+    backup_window: "{{ rds_backup_window }}"
+    backup_retention: 1     # one-day default; fine for testing
+    maint_window: "{{ rds_maint_window }}"
   register: rds
 
 - set_fact:

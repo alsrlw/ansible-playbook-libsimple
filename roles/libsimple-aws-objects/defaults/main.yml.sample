@@ -24,6 +24,7 @@ ec2_image_type: "CentOS Linux"
 ec2_image: "ami-db48ada1"
 # To find the latest image IDs, use the get-latest-ami-image script in the root
 # of this repository
+ec2_instance_primary_zone: "{{ aws_az_1 }}"
 
 # Size in gigabytes of Elastic Block Storage to allocate (fits under Free Tier)
 # Increase as needed
@@ -33,4 +34,33 @@ ec2_volume_size: 10
 
 # AWS RDS
 rds_instance_type: "db.t2.micro"
+rds_instance_primary_zone: "{{ aws_az_1 }}"
+# Storage:
+# 1. The default storage type, if not specified, is 'standard', magnetic storage
+# with an additional charge of $0.10/1M IOs; during metadata/feed imports, IOs
+# can be in the hundreds of millions.
+# 2. The storage type cannot be set using the Ansible rds module unfortunately. The
+# following is included for use in a Bash script using the aws cli utility, which
+# CAN be called by Ansible as a workaround. In that case, the entire RDS deployment
+# should be configured using the aws cli rds utility.
+rds_storage_type: "gp2"
 rds_size: 8
+# For production, or high-performance deployments, using Provisioned IOPS storage
+# is recommended (1000 IOPS minimum). PIOPS (io1) requires a minimum storage
+# provision of 100GB. Use the following as a minimum instead of the general SSD above
+#rds_storage_type: "io1"
+#rds_size: 100
+#rds_iops: 1000
+# In order to set logging to include anything other than errors, we need to create a
+# new parameter group. So we'll need access to the default settings of the specific
+# version of Postgres we are implementing, currently version 9.6 in RDS.
+rds_engine_type: "postgres"
+rds_engine_version: "9.6"
+
+rds_logging_parameter_group: "{{ libsimple_server_type }}-logging-params"
+rds_log_timezone: "UTC-6"
+
+# If you would like to set maintenance and backup windows, adjust the defaults below
+# to your liking.
+rds_backup_window: "02:30-03:00"
+rds_maint_window: "Sun:04:00-Sun:04:30"

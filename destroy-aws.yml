@@ -7,6 +7,7 @@
   connection: local
 
   vars_files:
+    - group_vars/all/main.yml
     - roles/libsimple-aws-objects/defaults/main.yml
 
   tasks:
@@ -17,6 +18,12 @@
         instance_name: "{{ libsimple_server_type }}-{{ libsimple_instance_name.replace(' ','-') }}"
         wait: yes
         wait_timeout: 1800
+
+    - name: Remove RDS Logging Parameter Group
+      rds_param_group:
+        region: "{{ aws_region }}"
+        name: "{{ rds_logging_parameter_group }}"
+        state: absent
 
     - name: Remove RDS Subnet Group
       rds_subnet_group:
