@@ -2,6 +2,9 @@
 # Adapted from NYPL-Simplified instructions "Deployment: Quickstart with Docker" 
 # https://github.com/NYPL-Simplified/Simplified/wiki/Deployment:-Quickstart-with-Docker#on-the-host-server
 
+# Either the 'scripts' or the 'deploy' container can be run first; however, whichever is
+# first should have the SIMPLIFIED_DB_TASK value of 'init'; the other should be 'migrate'
+
 - name: Check whether a manual configuration file exists locally
   local_action: stat path=files/circulation.config.json
   register: config_file
