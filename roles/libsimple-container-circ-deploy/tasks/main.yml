@@ -42,8 +42,8 @@
       SIMPLIFIED_PRODUCTION_DATABASE='postgres://{{ psql_username }}:{{ psql_password }}@{{ psql_endpoint }}:5432/{{ psql_db_name }}'
       {% if config_file.stat.exists %}
       SIMPLIFIED_CONFIGURATION_FILE=/etc/libsimple/circulation.config.json
-      TERM='xterm'
       {% endif %}
+      TERM='xterm'
 
     detach: true
     state: started
