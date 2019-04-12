@@ -1,23 +1,42 @@
 ---
-# Variables for Linode Creation
+# Variables for Linode Creation and API Access
 
 linode_api_key: ""
-linode_name: "SimplyE-test1"
+linode_api_v4_token: ""
+
+# Linode VM variables
+linode_name_cm: "SimplyE-CircMgr"
+linode_name_webclient: "SimplyE-Webclient"
 linode_display_group: "SimplyE"
+datacenter_id: "dallas"
 distribution_name: "CentOS 7"
 distribution_id: "linode/centos7"
-# The Linode default plan is Linode 1024; but plan Linode 2048 is required for SCM
-plan_id: "Linode 2048"
-datacenter_id: "dallas"
-# Disk image sizes in MB
-primary_disk_size: 12288
-swap_size: 2048
 root_password: ""
-host_name: ""
+
+# Values for the Circulation Manager host
+# The Linode default plan is Linode 1024; but plan Linode 2048 is required for SCM, 4096 is better
+plan_id_cm: "Linode 4GB"
+# Disk image sizes in MB
+primary_disk_size_cm: 12288
+swap_size_cm: 2048
+cm_host_name: "demo-cm"
+
+# Values for the Webclient Server host
+# The Linode default plan is Linode 1024; but plan Linode 2048 is required for SCM, 4096 is better
+plan_id_webclient: "Linode 2GB"
+# Disk image sizes in MB
+primary_disk_size_webclient: 12288
+swap_size_webclient: 2048
+webclient_host_name: "demo-webclient"
+
+# Admin user values
 admin_username: ""
-# A sample key pair filename
-admin_ssh_keyname: "scm_linode_test1"
 admin_password: ""
+# A sample key pair filename
+admin_ssh_keyname: "linode_demo_scm"
 
 # Variables for Vagrant
-vagrant_machine1_label: ""
+cm_machine_label: "circmgr"
+cm_autostart: true
+webclient_machine_label: "webclient"
+webclient_autostart: false

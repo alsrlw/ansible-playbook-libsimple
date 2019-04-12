@@ -1,24 +1,47 @@
 ---
-- name: Install docker software
-  yum:
-    pkg: "docker"
-    disable_gpg_check: yes
+# Install latest version of Docker Community Edition (CentOS7)
+
+- name: Add Docker repository
+  get_url:
+    url: https://download.docker.com/linux/centos/docker-ce.repo
+    dest: /etc/yum.repos.d/docker-ce.repo
+    mode: 0644
+
+- name: Install Docker prerequisites
+  yum: 
+    name: "{{ item }}"
     state: present
+    update_cache: yes
+    disable_gpg_check: yes
+  with_items:
+    - yum-utils
+    - device-mapper-persistent-data
+    - lvm2
+
+- name: Install Docker CE and utilities
+  yum: 
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+    disable_gpg_check: yes
+  with_items:
+    - docker-ce
+    - docker-ce-cli
+    - containerd.io
 
 - name: Start the docker service and enable it at boot
   systemd:
     name: docker
     state: started
-    enabled: True
+    enabled: true
 
 - name: Ensure docker-py is not present
   pip:
-    name: docker-py
+    name: "docker-py"
     state: absent
 
 - name: Install docker python module
   pip:
 #    name: "docker-compose==1.12.0"
-    name: "docker-compose"
-
+    name: "docker<3.0"
 

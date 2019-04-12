@@ -2,4 +2,7 @@
 # Ensure required packages are installed
   
 - name: Ensure psycopg2 is installed
-  package: name=python-psycopg2 state=present
+  yum:
+    name: python-psycopg2
+    disable_gpg_check: yes
+    state: present

@@ -1,0 +1,63 @@
+---
+# Original adapted from NYPL-Simplified instructions "Deployment: Quickstart with Docker" 
+# https://github.com/NYPL-Simplified/Simplified/wiki/Deployment:-Quickstart-with-Docker#on-the-host-server
+
+# Either the 'scripts' or the 'app server' container can be run first; however, whichever is
+# first should have the SIMPLIFIED_DB_TASK value of 'init'; the other should be 'migrate'
+# As of about version 2.1.9, the value 'auto' is perhaps better here. 'auto' will perform
+# an 'init' if the database doesn't exist and a 'migrate' otherwise. Since we potentially
+# may deploy multiple scripting containers (separated by function), having auto would be a
+# better option.
+
+# Deprecated: This is aging now that configuration of swim lanes is available in the 
+# web admin panel. Leaving it in for any edge cases where no web configuration is enabled.
+- name: Check whether a manual configuration file exists locally
+  local_action: stat path=files/circulation.config.json
+  become: no
+  register: config_file
+
+- name: If source config exists, create the destination config directory
+  file:
+    path: /etc/libsimple
+    state: directory
+    mode: 0755
+  when: config_file.stat.exists
+
+- name: If source config exists, copy the circulation config file (for swim lanes)
+  copy:
+    src: files/circulation.config.json
+    dest: /etc/libsimple/circulation.config.json
+    mode: 0644
+  when: config_file.stat.exists
+
+- name: "Ensure {{ libsimple_server_type }}-{{ container_app_name }} docker container is deployed"
+  docker_container:
+    name: "{{ libsimple_server_type }}-{{ container_app_name }}"
+    image: "nypl/{{ libsimple_server_type }}-{{ container_app_name }}:{{ simplye_circulation_version }}"
+
+    networks:
+      - name: "{{ network_name }}"
+    purge_networks: yes
+
+    log_driver: "{{ app_server_log_driver }}"
+    # For AWS CloudWatch Logs, uncomment and use the following option(s) as a base
+    #log_options:
+    #  awslogs-region: "{{ aws_region }}"
+    #  awslogs-group: "{{ scripts_log_group }}"
+    # The AWS IAM policy for the user must be updated to include the logs:CreateLogGroup permission before issuing next
+    #  awslogs-create-group: true
+
+    restart_policy: "unless-stopped"
+    ports:
+      - 80:80
+#    volumes:
+#      - /etc/libsimple:/etc/libsimple
+    env:
+      SIMPLIFIED_DB_TASK='auto'
+      SIMPLIFIED_PRODUCTION_DATABASE='postgres://{{ psql_db_username }}:{{ psql_db_password }}@{{ psql_endpoint }}:{{ psql_db_port }}/{{ psql_db_name }}'
+      {% if config_file.stat.exists %}
+      SIMPLIFIED_CONFIGURATION_FILE=/etc/libsimple/circulation.config.json
+      {% endif %}
+      TERM='xterm'
+    detach: true
+    state: "{{ app_server_state }}"

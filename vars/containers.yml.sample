@@ -1,0 +1,44 @@
+---
+# Variables related to SimplyE Container Implementation
+
+# Scripting/maintenance servers 
+scripts_state: "started"    # generally from the list [ 'present', 'absent', 'stopped', 'started']
+# Default logging driver unless changed; for AWS CloudWatch Logs, use "awslogs"
+scripts_log_driver: "json-file"
+# Needed for AWS
+scripts_log_group: "{{ project_name|lower }}-{{ libsimple_server_type|lower }}-{{ container_scripts_name }}-{{ libsimple_environment }}-{{ libsimple_instance_name }}"
+
+# Container restrictions, especially for ECS services
+scripts_memory_allocated: ""
+scripts_memory_reservation: ""
+scripts_cpu_units: ""
+
+# Application servers
+app_server_state: "started"
+app_server_log_driver: "json-file"
+app_server_log_group: "{{ project_name|lower }}-{{ libsimple_server_type|lower }}-{{ container_app_name }}-{{ libsimple_environment }}-{{ libsimple_instance_name }}"
+
+# Container restrictions, especially for ECS services
+app_server_memory_allocated: ""
+app_server_memory_reservation: ""
+app_server_cpu_units: ""
+
+# PatronWeb application servers
+patronweb_server_state: "present"
+patronweb_server_log_driver: "json-file"
+patronweb_server_log_group: "{{ project_name|lower }}-{{ container_webclient_name }}-{{ libsimple_environment }}-{{ libsimple_instance_name }}"
+patronweb_server_ip: ""   # For local VM, 172.18.0.21 fits default scheme
+patronweb_server_port: "3000"
+patronweb_server_domain: ""
+patronweb_path_short_name: ""
+# Full CM URL, not including the trailing slash
+library_cm_domain: ""
+library_cm_url: "http://{{ library_cm_domain }}"
+library_cm_short_name: ""
+
+nginx_proxy_name: "nginx-proxy"
+nginx_proxy_state: "present"
+nginx_proxy_log_driver: "json-file"
+nginx_proxy_log_group: "{{ project_name|lower }}-nginx-proxy-{{ libsimple_environment }}"
+nginx_proxy_ip: ""   # For local VM, 172.18.0.5 fits default scheme
+nginx_proxy_port: "80"

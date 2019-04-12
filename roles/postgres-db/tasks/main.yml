@@ -1,0 +1,183 @@
+---
+# Adapted from NYPL-Simplified instructions "Deployment: Quickstart with Docker" 
+# https://github.com/NYPL-Simplified/Simplified/wiki/Deployment:-Quickstart-with-Docker#on-the-host-server
+
+# Tasks for the Postgres service
+
+# Be certain the Postgres host name/IP is available; it should have
+# been created as part of the database server deployment. If not,
+# fail the play.
+
+- name: Fail if the Postgres host variable has not been set
+  fail:
+    msg: "There is no database server defined."
+  when: (rds_host is not defined or rds_host == "") and postgres_ip == ""
+
+- name: Set db_host when AWS RDS is used
+  set_fact:
+    db_host: "{{ rds_host }}"
+  when: rds_host is defined and rds_host != ""
+
+- name: Or, set db_host when standalone Postgres server is used
+  set_fact:
+    db_host: "{{ postgres_ip }}"
+  when: postgres_ip != ""
+
+- name: Reset ssh admin value if in a Linode environment
+  block:
+    - name: Include Linode variables to retrieve admin name
+      include_vars:
+        file: vars/linode_vars.yaml
+    - name: Set new ssh admin name
+      set_fact:
+        ssh_admin_user: "{{ admin_username }}"
+  when: deployment_target == "lin"
+
+- name: Install utilities needed for PG client utilities
+  yum:
+    name: "{{ item }}"
+    disable_gpg_check: yes
+    state: present
+  with_items:
+    - wget
+
+# Pip should have been installed from the libsimple-host-aws role
+- name: Install python modules required for some aws work with RDS Postgres
+  pip: 
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - psycopg2
+
+- name: Ensure scripts directory exists
+  file:
+    path: "/home/{{ ssh_admin_user }}/scripts"
+    state: directory
+    mode: 0750
+
+# Begin installing Postgres command line utilities on scripting hosts
+- name: Transfer script to install Postgres client utilities
+  copy:
+    src: "files/install_pg_clients.sh"
+    dest: "/home/{{ ssh_admin_user }}/scripts/install_pg_clients.sh"
+    owner: "{{ ssh_admin_user }}"
+    group: "{{ ssh_admin_user }}"
+    mode: 0750
+
+- name: Create a Postgres user/password config file for accessing remote server
+  become: yes
+  template:
+    src: "templates/pgpass.j2"
+    dest: "/home/{{ ssh_admin_user }}/.pgpass"
+    owner: "{{ ssh_admin_user }}"
+    group: "{{ ssh_admin_user }}"
+    mode: 0600
+
+- block:
+    - name: Get the existing RDS instance data when using AWS
+      rds:
+        command: facts
+        region: "{{ aws_region }}"
+        instance_name: "{{ project_name|lower }}-{{ libsimple_server_type|lower }}-{{ libsimple_environment }}-{{ libsimple_instance_name.replace(' ','-') }}"
+      delegate_to: localhost
+      register: current_db_facts
+    - name: Set version number retrieved from AWS
+      set_fact:
+        db_version: "{{ current_db_facts.instance.engine_version }}"
+  when: deployment_target|lower == "aws"
+
+- block:
+    - name: Or, Retrieve Postgres version number from Postgres server when hosted on separate server
+      set_fact:
+        db_version: "{{ postgres_version }}"
+  when: deployment_target|lower != "aws"
+
+- debug: 
+    var: db_version
+
+- name: Split version components
+  set_fact: 
+    version_facts: "{{ db_version.split('.') }}"
+
+- name: Flatten major/minor numbers as needed (depends on major version number)
+  set_fact:
+    flat_version: "{{ version_facts[0] }}{{ version_facts[1] }}"
+  when: version_facts[0] | int < 10
+- set_fact:
+    majmin_version: "{{ version_facts[0] }}.{{ version_facts[1] }}"
+  when: version_facts[0] | int < 10
+
+- set_fact:
+    flat_version: "{{ version_facts[0] }}"
+  when: version_facts[0] | int > 9
+- set_fact:
+    majmin_version: "{{ version_facts[0] }}"
+  when: version_facts[0] | int > 9
+
+- name: Get OS Version from remote
+#  command: "cat /etc/redhat-release | awk '{ printf $4 }'"
+  command: cat /etc/redhat-release
+  register: cmd_result
+
+- name: Get OS major version number
+  set_fact: 
+    os_version_facts: "{{ cmd_result.stdout.split(' ') }}"
+- set_fact:
+    os_version_numbers: "{{ os_version_facts[3].split('.') }}"
+
+# TODO: Need some work here. This command will always run; should check existing 
+# version first? or check the existence of the temp file shown below?
+- name: Run installation of Postgres client utilities
+  command: "/home/{{ ssh_admin_user }}/scripts/install_pg_clients.sh {{ majmin_version }} {{ os_version_numbers[0] }} {{ ssh_admin_user }}"
+  args:
+    # Can I use a fileblob here?
+    creates: "/home/{{ ssh_admin_user }}/temp/pgdg-centos*"
+  register: install_pg
+
+- name: Display installation results
+  debug:
+    var: install_pg.stdout_lines
+
+# Create the Circulation Manager database user if it doesn't exist
+- name: Ensure psql user "{{ psql_db_username }}" exists
+  postgresql_user:
+    login_host: "{{ psql_endpoint }}"
+    login_user: "{{ psql_username }}"
+    login_password: "{{ psql_password }}"
+    user: "{{ psql_db_username }}"
+    password: "{{ psql_db_password }}"
+  when: scm_host is defined
+
+# Create the Circulation Manager database/schema if it doesn't exist
+- name: Ensure Circulation Manager database exists
+  postgresql_db:
+    # The psql_endpoint is recreated via the libsimple-get-database-host role
+    login_host: "{{ psql_endpoint }}"
+    login_user: "{{ psql_username }}"
+    login_password: "{{ psql_password }}"
+    name: "{{ psql_db_name }}"
+    owner: "{{ psql_db_username }}"
+    state: present
+  when: scm_host is defined
+
+# Create the Circulation Manager database user if it doesn't exist
+#- name: Ensure psql user "{{ psql_db_username }}" exists with privileges on "{{ psql_db_name }}" database
+#  postgresql_user:
+#    login_host: "{{ psql_endpoint }}"
+#    db: "{{ psql_db_name }}"
+#    user: "{{ psql_db_username }}"
+#    password: "{{ psql_db_password }}"
+#    login_user: "{{ psql_username }}"
+#    login_password: "{{ psql_password }}"
+#    priv: ALL
+#  when: scm_host is defined
+
+# Install required Postgres modules
+- name: Ensure pgcrypto extension is created on db
+  postgresql_ext:
+    name: pgcrypto
+    login_host: "{{ psql_endpoint }}"
+    db: "{{ psql_db_name }}"
+    login_user: "{{ psql_username }}"
+    login_password: "{{ psql_password }}"
+  when: scm_host is defined

@@ -1,0 +1,27 @@
+server {
+    listen      80 deferred;
+    server_name localhost;
+    charset     utf-8;
+    client_max_body_size 75M;
+    merge_slashes off;
+
+    location / { try_files $uri @circulation; }
+    location @circulation {
+        include uwsgi_params;
+        uwsgi_read_timeout 120;
+        uwsgi_pass unix:/var/www/circulation/uwsgi.sock;
+    }
+    location /nginx_status {
+        stub_status on;
+# To restrict this path to specific IP users, one
+# could include the following block as a Jinja2
+# template for Ansible deployments. Management 
+# would be a headache, but it's a possibility when
+# full access is not desired.
+# To implement just remove # characters that follow:
+#{% for ip in ip_list %}
+#        allow {{ ip }};
+#{% endfor %}
+#        deny all;
+    }
+}

@@ -4,23 +4,35 @@
 
 # Either the 'scripts' or the 'deploy' container can be run first; however, whichever is
 # first should have the SIMPLIFIED_DB_TASK value of 'init'; the other should be 'migrate'
+# As of about version 2.1.9, the value 'auto' is perhaps better here. 'auto' will perform
+# an 'init' if the database doesn't exist and a 'migrate' otherwise. Since we potentially
+# may deploy multiple scripting containers (separated by function), having auto would be a
+# better option.
 
-- name: Ensure circ-scripts docker container is started
+- name: "Ensure {{ libsimple_server_type }}-{{ container_scripts_name }} docker container is deployed"
   docker_container:
-    name: circ-scripts
-    image: "nypl/circ-scripts:{{ simplye_circulation_version }}"
+    name: "{{ libsimple_server_type }}-{{ container_scripts_name }}"
+    image: "nypl/{{ libsimple_server_type }}-{{ container_scripts_name }}:{{ simplye_circulation_version }}"
 
     networks:
       - name: "{{ network_name }}"
     purge_networks: yes
 
+    log_driver: "{{ scripts_log_driver }}"
+    # For AWS CloudWatch Logs, uncomment and use the following option(s) as a base
+    #log_options:
+    #  awslogs-region: "{{ aws_region }}"
+    #  awslogs-group: "{{ scripts_log_group }}"
+    # The AWS IAM policy for the user must be updated to include the logs:CreateLogGroup permission before issuing next
+    #  awslogs-create-group: true
+
     restart_policy: "unless-stopped"
-    volumes:
-      - /etc/libsimple:/etc/circulation
+#    volumes:
+#      - /etc/libsimple:/etc/circulation
     env:
       TZ="{{ system_timezone }}"
-      SIMPLIFIED_DB_TASK='init'
-      SIMPLIFIED_PRODUCTION_DATABASE='postgres://{{ psql_username }}:{{ psql_password }}@{{ psql_endpoint }}:5432/{{ psql_db_name }}'
+      SIMPLIFIED_DB_TASK='auto'
+      SIMPLIFIED_PRODUCTION_DATABASE='postgres://{{ psql_db_username }}:{{ psql_db_password }}@{{ psql_endpoint }}:{{ psql_db_port }}/{{ psql_db_name }}'
       TERM='xterm'
     detach: True
-    state: started
+    state: "{{ scripts_state }}"

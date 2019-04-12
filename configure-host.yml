@@ -1,0 +1,112 @@
+---
+# Basic host configuration tasks
+
+- name: Configure host users and utilities
+  hosts: all
+  become: yes
+
+  tasks:
+    # vm_environment variable must be provided in extra_vars parameter
+    - name: Include variables for target vm environment
+      include_vars: vars/{{ vm_environment }}_vars.yml
+
+    # Set base user path with ternary function
+    - name: Set user's home dir path
+      set_fact:
+        user_home: "{{ (ssh_admin_user == 'root') | ternary('/root','/home/'+ssh_admin_user) }}"
+
+    # The check_mode setting means this will not actually run, but will report 'changed'
+    # if the gpgcheck=1 line is found in yum.conf
+    - name: Check whether Yum in configured to always check gpg signatures
+      lineinfile:
+        path: /etc/yum.conf
+        line: 'gpgcheck=1'
+        state: absent
+      check_mode: yes
+      register: gpg_configuration
+      failed_when: false
+
+    - name: Set Yum NOT to check for package signatures (to install IUS automatically)
+      lineinfile:
+        path: /etc/yum.conf
+        regexp: '^gpgcheck'
+        line: 'gpgcheck=0'
+      when: gpg_configuration.changed
+
+    # Install IUS Repository; needed for git v2
+    - name: Download IUS Repository setup script
+      get_url:
+        url: https://setup.ius.io/
+        dest: "{{ user_home }}/setup-ius.sh"
+        mode: 0750
+      register: ius_download
+
+    # Run install script, which also installs epel-release
+    - name: Install IUS and EPEL Repositories
+      command: "sh {{ user_home }}/setup-ius.sh"
+      register: ius_repo
+
+    - name: If changed, restore Yum GPG check value
+      lineinfile:
+        path: /etc/yum.conf
+        regexp: '^gpgcheck'
+        line: 'gpgcheck=1'
+      when: gpg_configuration.changed
+
+    # Loop through utilities list
+    - name: Install system utilities
+      yum:
+        name: "{{ item }}"
+        update_cache: yes
+        disable_gpg_check: yes
+        state: present
+      with_items:
+        - htop
+        - iotop
+        - sysstat
+        - nano
+        - python-pip
+      register: yum_result
+      retries: 10
+      until: yum_result | succeeded   # for ansible 2.5+ `result is succeeded`
+      delay: 3
+
+    - name: Upgrade pip
+      pip:
+        name: pip
+        extra_args: --upgrade        
+
+    # Add admin user (not root) with sudo privileges in Linode environment
+    - name: Add administrative user for remote login
+      user:
+        name: "{{ admin_username }}"
+        groups: wheel
+        append: yes
+        shell: /bin/bash
+        createhome: yes
+        password: "{{ admin_password }}"
+        state: present
+      when: deployment_target == 'lin'
+
+    - name: Ensure admin's scripts directory exists
+      file:
+        path: "/home/{{ admin_username }}/scripts"
+        state: directory
+        owner: "{{ admin_username }}"
+        group: "{{ admin_username }}"
+        mode: 0750
+      when: deployment_target == 'lin'
+
+    # Configure timezone (from group_vars)
+    - name: Set host timezone
+      timezone:
+        name: "{{ system_timezone }}"
+      register: time_set
+
+    # Restart cron to make sure timing is correct after changing timezone
+    - name: Restart cron service; issue daemon-reload for any configuration changes
+      systemd:
+        state: restarted
+        daemon_reload: yes
+        name: crond
+      when: time_set.changed

@@ -1,14 +1,23 @@
-
-# Vagrant playbook for dev/test: 
+---
+# Playbook for Vagrant environment to configure host and add containers for dev/testing
 
 - hosts: all
   become: yes
+# vars from group_vars/all/main.yml get pulled from hosts match above
+# additional vars files needed:
+  vars_files:
+    - vars/containers.yml
+    - "vars/{{ vm_environment }}_vars.yml"
+  vars:
+    - scm_host: true
+
   roles:
-#    - geerlingguy.docker
     - docker
     - libsimple-docker-network
-    - libsimple-container-elasticsearch
-    - libsimple-container-postgres
-    - libsimple-host
-    - libsimple-container-circ-scripts
-    - libsimple-container-circ-deploy
+    - { role: libsimple-container-elasticsearch, when: vm_type == "cm" }
+    - { role: libsimple-container-postgres, when: vm_type == "cm" }
+    - { role: postgres-db, when: vm_type == "cm" }
+    - { role: libsimple-container-circ-scripts, when: vm_type == "cm" }
+    - { role: libsimple-container-circ-webapp, when: vm_type == "cm" }
+    - { role: libsimple-build-webclient, when: vm_type == "webclient" and temp_build == true }
+    - { role: libsimple-container-webclient, when: vm_type == "webclient" }

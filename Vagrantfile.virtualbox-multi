@@ -3,15 +3,15 @@
 
 # Load YAML module to parse variables from Ansible .yml file
 require 'yaml'
-settings = YAML.load_file 'vars/linode_vars.yml'
-DirName = "/home/" + settings['admin_username'] + "/.ssh"
+settings = YAML.load_file 'vars/virtualbox_multi_vars.yml'
 
 Vagrant.configure(2) do |config|
   config.vm.define settings['cm_machine_label'], primary: true, autostart: settings['cm_autostart'] do |cm|
+    cm.vm.box = "centos/7"
+
     # Create a forwarded port mapping which allows access to the application port
     # within the machine from a port on the host machine.
-    # No NAT configuration, so no ports need to be forwarded
-    #cm.vm.network "forwarded_port", guest: 80, host: settings['cm_host_port']
+    cm.vm.network "forwarded_port", guest: 80, host: settings['cm_host_port']
 
     # Create a private network, which allows host-only access to the machine
     # using a specific IP.
@@ -36,22 +36,14 @@ Vagrant.configure(2) do |config|
 
     # Provider-specific configuration so you can fine-tune various
     # backing providers for Vagrant. These expose provider-specific options.
-    # Provider-specific configuration for Linode
-    cm.vm.provider :linode do |provider, override|
-      override.ssh.private_key_path = "~/.ssh/" + settings['admin_ssh_keyname']
-      override.vm.box = settings['distribution_id']
-      override.vm.box_url = "https://github.com/displague/vagrant-linode/raw/master/box/linode.box"
-
-      provider.token = settings['linode_api_key']
-      provider.distribution = settings['distribution_name']
-      provider.datacenter = settings['datacenter_id']
-      provider.plan = settings['plan_id_cm']
-      provider.label = settings['linode_name_cm']
-      provider.group = settings['linode_display_group']
-      # Main Disk Image Size (string): ( Full Allocation - Swap ) if missing
-      provider.xvda_size = settings['primary_disk_size_cm']
-      # Swap Image Size (string): 256MB if missing
-      provider.swap_size = settings['swap_size_cm']
+    # Example for VirtualBox:
+    #
+    cm.vm.provider "virtualbox" do |vb1|
+      # Display the VirtualBox GUI when booting the machine
+      # vb1.gui = true
+      #
+      # Customize the amount of memory on the VM:
+      vb1.memory = settings['cm_memory_allocation']
     end
     #
     # View the documentation for the provider you are using for more
@@ -63,7 +55,7 @@ Vagrant.configure(2) do |config|
       ansible1.verbose = "vv"
       ansible1.playbook = "configure-host.yml"
       ansible1.extra_vars = {
-        vm_environment: "linode"
+        vm_environment: "virtualbox_multi"
       }
     end
    
@@ -71,17 +63,10 @@ Vagrant.configure(2) do |config|
       ansible2.verbose = "vv"
       ansible2.playbook = "provision-vagrant.yml"
       ansible2.extra_vars = {
-        vm_environment: "linode",
+        vm_environment: "virtualbox_multi",
         vm_type: "cm"
       }
     end
-
-    # Shell provisioner to create admin user .ssh directory
-    cm.vm.provision "shell", inline: "mkdir " + DirName
-
-    # File provisioner to copy public key for admin user
-    cm.vm.provision "file", source: "~/.ssh/" + settings['admin_ssh_keyname'] + ".pub", destination: DirName + "/authorized_keys"
-
   end
 
   config.vm.define settings['webclient_machine_label'], autostart: settings['webclient_autostart'] do |webclient|
@@ -89,8 +74,7 @@ Vagrant.configure(2) do |config|
 
     # Create a forwarded port mapping which allows access to the application port
     # within the machine from a port on the host machine.
-    # No NAT configuration, so no ports need to be forwarded
-    #webclient.vm.network "forwarded_port", guest: 80, host: settings['webclient_host_port']
+    webclient.vm.network "forwarded_port", guest: 80, host: settings['webclient_host_port']
 
     # Create a private network, which allows host-only access to the machine
     # using a specific IP.
@@ -114,22 +98,14 @@ Vagrant.configure(2) do |config|
 
     # Provider-specific configuration so you can fine-tune various
     # backing providers for Vagrant. These expose provider-specific options.
-    # Provider-specific configuration for Linode
-    webclient.vm.provider :linode do |provider, override|
-      override.ssh.private_key_path = "~/.ssh/" + settings['admin_ssh_keyname']
-      override.vm.box = settings['distribution_id']
-      override.vm.box_url = "https://github.com/displague/vagrant-linode/raw/master/box/linode.box"
-
-      provider.token = settings['linode_api_key']
-      provider.distribution = settings['distribution_name']
-      provider.datacenter = settings['datacenter_id']
-      provider.plan = settings['plan_id_webclient']
-      provider.label = settings['linode_name_webclient']
-      provider.group = settings['linode_display_group']
-      # Main Disk Image Size (string): ( Full Allocation - Swap ) if missing
-      provider.xvda_size = settings['primary_disk_size_webclient']
-      # Swap Image Size (string): 256MB if missing
-      provider.swap_size = settings['swap_size_webclient']
+    # Example for VirtualBox:
+    #
+    webclient.vm.provider "virtualbox" do |vb2|
+      # Display the VirtualBox GUI when booting the machine
+      # vb2.gui = true
+      #
+      # Customize the amount of memory on the VM:
+      vb2.memory = settings['webclient_memory_allocation']
     end
     #
     # View the documentation for the provider you are using for more
@@ -141,7 +117,7 @@ Vagrant.configure(2) do |config|
       ansible3.verbose = "vv"
       ansible3.playbook = "configure-host.yml"
       ansible3.extra_vars = {
-        vm_environment: "linode"
+        vm_environment: "virtualbox_multi"
       }
     end
    
@@ -149,17 +125,10 @@ Vagrant.configure(2) do |config|
       ansible4.verbose = "vv"
       ansible4.playbook = "provision-vagrant.yml"
       ansible4.extra_vars = {
-        vm_environment: "linode",
+        vm_environment: "virtualbox_multi",
         vm_type: "webclient"
       }
     end
-
-    # Shell provisioner to create admin user .ssh directory
-    webclient.vm.provision "shell", inline: "mkdir " + DirName
-
-    # File provisioner to copy public key for admin user
-    webclient.vm.provision "file", source: "~/.ssh/" + settings['admin_ssh_keyname'] + ".pub", destination: DirName + "/authorized_keys"
-
   end
 
 end
