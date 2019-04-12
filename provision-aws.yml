@@ -16,26 +16,5 @@
     - libsimple-host-aws
     - libsimple-docker-network
     - libsimple-container-circ-scripts
-    - libsimple-container-circ-deploy
-
-- name: Add temporary utilities to support the Circulation Manager if playbook exists
-  hosts: circulation-servers
-  remote_user: "{{ ec2_initial_user }}"
-  become: yes
-
-  # The [ ] files list will result in any of the files in the list being loaded
-  # only if it exists; no error will occur if one or more doesn't exist
-  # Values in these extra files are used as sentinels in determining the remote username
-  vars_files:
-    - vars/temp_vars.yml
-    - group_vars/all/main.yml
-    - ["vars/linode_vars.yml", "roles/libsimple-aws-objects/defaults/main.yml"]
-
-  tasks:
-    - name: Check whether a manual configuration file exists locally
-      local_action: stat path=temporary-tasks.yml
-      register: temp_plays
-
-    - include: temporary-tasks.yml
-      when: temp_plays.stat.exists
+    - libsimple-container-circ-webapp
 
