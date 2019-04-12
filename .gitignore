@@ -4,8 +4,9 @@ Vagrantfile
 test*
 *.*~
 group_vars/all/main.yml
-group_vars/all/main.yml.vagrant
 roles/libsimple-aws-objects/defaults/main.yml
 roles/geer*
 vars/linode_vars.yml
+vars/virtualbox_multi_vars.yml
+vars/containers.yml
 .boto
