@@ -1,5 +1,5 @@
 # Library Simplified Ansible Provisioner (Circulation Server)
-This set of automation files using [Vagrant](http://https://www.vagrantup.com/) and [Ansible](http://docs.ansible.com/ansible/) will provision a [Library Simplified circulation server](https://github.com/NYPL-Simplified/circulation/) in a variety of development environments. 
+This set of automation files using [Ansible](http://docs.ansible.com/ansible/) and [Vagrant](http://https://www.vagrantup.com/) will provision a [Library Simplified Circulation Manager](https://github.com/NYPL-Simplified/circulation/) in a variety of development environments. 
 
 *Deployment Options:*
 * [Deploy Using Vagrant to Local VM for Dev Testing](#vagrant-local)
@@ -18,55 +18,55 @@ Each of the three deployment options shown below make use of Ansible playbooks t
 
 Because using Ansible for deployment is not supported on Windows computers natively, we suggest using a Linux desktop or a Mac to act as the Ansible controller.
 
-See the Ansible [Installation Guide](http://docs.ansible.com/ansible/intro_installation.html) for details. The Elasticsearch container requires that have a recent version of Ansible (> 2.x). But creating a new install from the *Guide* should now provide you that. To check definitively, you can check the version number installed with the command:
+See the Ansible [Installation Guide](http://docs.ansible.com/ansible/intro_installation.html) for details. Deploying the Elasticsearch container in local or Linode.com virtual machines from this repository requires a recent version of Ansible (> 2.x). But creating a new install now from the *Guide* should provide you that. To check definitively, you can check the version number installed with the command:
 ```
 ansible --version
 ```
 
 ### Vagrant ###
 
-If you choose to deploy your demonstration Circulation Manager to a local machine or to Linode.com, Vagrant is a great tool to assist in creating those virtual machines. You will need to install Vagrant as well so that you can the Vagrantfile automation scripts in the repository.
+If you choose to deploy your demonstration Circulation Manager to a local machine or to Linode.com, Vagrant is a great tool to assist in creating those virtual machines. You will need to install Vagrant as well so that you can use the Vagrantfile automation scripts we've included in the repository.
 
 See Hashicorp's [Vagrant installation](https://www.vagrantup.com/docs/installation/) page for details.
 
 
 ### VirtualBox ###
-Last, if you wish to deploy the Circulation Manager to a local virtual machine, using this repository, you will need to install VirtualBox on your control machine. Other virtual machine tools (VMWare, Hyper-V) will work just as well; however, the virtualization tool we've used in this repository is VirtualBox. If you choose to use one of the other common tools, you just need to revise the Vagrantfile configuration to be appropriate for that tool.
+Last, if you wish to deploy the Circulation Manager to a local virtual machine on your Mac or Linux desktop computer using this repository, you will need to install VirtualBox as well. Other virtual machine tools (VMWare, Hyper-V) will work just as well; however, the virtualization tool we've used in this repository is VirtualBox. If you choose to use one of the other common tools, you just need to revise the Vagrantfile configuration to be appropriate for that tool.
 
 See Oracle's [VirtualBox](https://www.virtualbox.org/wiki/Downloads) downloads page for more information.
 
 
 <a name="vagrant-local"></a>
 ## Deploy Using Vagrant to Local VM for Dev Testing
-_Because it uses local docker containers to provide Elasticsearch and PostgreSQL, the `provision-vagrant.yml` playbook is not suitable for production._ 
+*Because it uses local docker containers to provide Elasticsearch and PostgreSQL, the `provision-vagrant.yml` playbook is not suitable for production.*
 
-This repository includes a Vagrant configuration file which will create the target virtual machine for you on your local workstation and run two Ansible playbooks against that newly created virtual machine. To get started, follow these steps.
+This repository includes a Vagrant configuration file which will create the target virtual machine for you on your local workstation. The Vagrant file runs two Ansible playbooks against that newly created virtual machine, which will deploy the containers necessary to have a running Circulation Manager instance. To get started, follow these steps.
 
 1. Open a command-line terminal and make a directory to store this repository; for example:
 ```
 mkdir /home/user/vagrant_projects/libsimple
 ```
-2. Change directories to the respository directory:
+2. Change directories to the repository directory:
 ```
 cd /home/user/vagrant_projects/libsimple`
 ```
-3. Clone this repository to the control machine:
+3. Clone this repository to its local directory:
 ```
 git clone https://github.com/alsrlw/ansible-playbook-libsimple.git ./
 ```
-4. Copy the sample variable files to their working twins:
+4. Copy the sample variable files to their working versions:
 ```
 cp group_vars/all/main.yml.sample group_vars/all/main.yml
 cp vars/containers.yml.sample vars/containers.yml
 cp vars/virtualbox_multi_vars.yml.sample vars/virtualbox_multi_vars.yml
 ```
-Open each file and revise or fill in values for each variable.
+Open each file and revise or fill in values as needed for each variable.
 
 5. Copy the proper Vagrantfile to its operational name:
 ```
 cp Vagrantfile.virtualbox-multi Vagrantfile
 ```
-9. Once you have the variables values all configured and have established the `Vagrantfile`, you are ready create and start the virtual server. Because there are two potential servers represented in the Vagrantfile, you need to issue the Vagrant command and specify the Circulation Manager machine to spin up the demonstration server:
+9. Once you have the variable values all configured and have established the `Vagrantfile`, you are ready create and start the virtual server. Because there are two potential servers represented in the Vagrantfile, you need to issue the Vagrant command and specify the Circulation Manager machine to spin up the demonstration server:
 ```
 vagrant up circmgr
 ```
@@ -107,7 +107,8 @@ You will need:
 ```
 sudo pip install linode-python
 vagrant plugin install vagrant-linode
-; (Optional) If you want to experiment with Linode API access from the console command-line
+; (Optional) If you want to experiment with Linode API access from
+; the console command-line
 ; On RedHat distributions:
 sudo yum install linode-cli
 sudo yum install perl-LWP-Protocol-https
@@ -115,7 +116,7 @@ sudo yum install perl-LWP-Protocol-https
 sudo apt-get install linode-cli
 sudo apt-get install liblwp-protocol-https-perl
 ```
-2. Open a command-line terminal and make a directory to store this repository; for example:
+2. Also make a directory to house this repository; for example:
 ```
 mkdir /home/user/vagrant_projects/libsimple
 ```
@@ -123,23 +124,23 @@ mkdir /home/user/vagrant_projects/libsimple
 ```
 cd /home/user/vagrant_projects/libsimple`
 ```
-4. Clone this repository to the control machine:
+4. Clone this repository to its local directory:
 ```
 git clone https://github.com/alsrlw/ansible-playbook-libsimple.git ./
 ```
-5. Copy the sample variable files to their working twins:
+5. Copy the sample variable files to their working versions:
 ```
 cp group_vars/all/main.yml.sample group_vars/all/main.yml
 cp vars/containers.yml.sample vars/containers.yml
 cp vars/linode_vars.yml.sample vars/linode_vars.yml
 ```
-Open each file and revise or fill in values for each variable.
+Open each variable file and revise or fill in values as needed for each variable.
 
 6. Copy the proper Vagrantfile to its operational name:
 ```
 cp Vagrantfile.linode Vagrantfile
 ```
-7. Register for an account at Linode.com if you don't currently have one. (First seven days are free, but a credit card is required.)
+7. Register an account at Linode.com if you don't currently have one. (First seven days are free, but a credit card is required.)
 8. Log into your Linode account and create an API key to use with the Vagrant file below:
 	* After logging in, click the ***my profile*** link
     * Enter your account password again to re-authorize access
@@ -158,7 +159,7 @@ ssh-keygen -t rsa -b 4096 -f ~/.ssh/scm_linode_test1
 12. Generate a crypted password for your admin user password:
     `python -c 'import crypt,getpass; print(crypt.crypt(getpass.getpass(), crypt.mksalt(crypt.METHOD_SHA512)))'`
 13. Copy the printed crypted value from the output of #17 into the appropriate variable value in `vars/linode_vars.yml`.
-14. Execute the Vagrant file to create and provision the server:
+14. Once you have the variable values all configured and have established the `Vagrantfile`, you are ready create and start the virtual server. Because there are two potential servers represented in the Vagrantfile, you need to issue the Vagrant command and specify the Circulation Manager machine to create and provision the server:
 ```
 vagrant up circmgr
 ```
