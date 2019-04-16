@@ -1,0 +1,84 @@
+---
+# Role for initial test builds of the SimplyE Patron Web Client server/container
+# This role provides a custom, local Docker build image on the remote host
+# This role will:
+# - ensure git is installed on the webclient container host instance
+# - create a directory for the docker-patron-web repo
+# - pull copy of docker repo
+# - build (docker build) a local image of the webclient server container
+#
+# This role, along with the new patronweb deploy role, will be deployed
+# in the same manner as the circ-webapp container. Until an official image is 
+# available at Docker Hub (or other repo), this will simulate a docker pull 
+# from the docker Hub nypl images
+
+- name: Ensure Git is installed on the webserver host instance
+  yum:
+    name: git2u
+    update_cache: yes
+    disable_gpg_check: yes
+    state: present
+
+- name: Check for existence of build directory
+  stat:
+    path: "/home/{{ ssh_admin_user }}/docker-build"
+  register: stat_result
+
+#- name: Clone specific branch of git repo, if not done before
+#  command: "git clone {{ webclient_docker_repo }} --branch {{ webclient_docker_version }} --single-branch /home/{{ ssh_admin_user }}/docker-build"
+#  register: gitclone
+#  when: stat_result.stat.exists == False
+
+- name: Clone specific branch of git repo, if not done before
+  git:
+    repo: "{{ patronweb_docker_repo }}"
+    version: "{{ patronweb_docker_version }}"
+    depth: 1
+    dest: "/home/{{ ssh_admin_user }}/docker-build"
+  register: gitclone
+  when: stat_result.stat.exists == False
+
+- name: Find project script files
+  find:
+    paths: "/home/{{ ssh_admin_user }}/docker-build"
+    patterns: "*.sh"
+  register: shell_glob
+
+- name: Ensure shell scripts are executable
+  file:
+    path: "{{ item.path }}"
+    mode: 0750
+  with_items:
+    - "{{ shell_glob.files }}"
+
+- name: Select patronweb Docker file to build
+  command: "cp /home/{{ ssh_admin_user }}/docker-build/{{ patronweb_docker_filename }} /home/{{ ssh_admin_user }}/docker-build/Dockerfile"
+  register: cmd_result
+  when: patronweb_docker_filename != "Dockerfile"
+
+# TODO: bummer: the Ansible build process is broken from a change in docker-python v3.x and greater
+# We could downgrade the Python docker module, or just 
+- name: Build the patronweb Docker image
+  docker_image:
+    name: "{{ container_patronweb_name }}"
+    tag: "{{ simplye_patronweb_version }}"
+    path: "/home/{{ ssh_admin_user }}/docker-build"
+    nocache: yes
+    state: present
+    buildargs:
+      PATRONWEB_REPO: "https://github.com/{{ patronweb_code_repo }}.git"
+      REPO_VERSION: "{{ patronweb_code_version }}"
+
+# TODO: make idempotent (look for existence of built image)
+# A shell module version of the build process, if needed
+#- name: Build the patronweb Docker image via Bash commands
+#  shell: > 
+#    docker build -f Dockerfile  \
+#    --build-arg PATRONWEB_REPO=https://github.com/{{ patronweb_code_repo }}.git \
+#    --build-arg REPO_VERSION={{ patronweb_code_version }} \
+#    --no-cache -t {{ container_patronweb_name }}  .
+#  args:
+#    chdir: /home/{{ ssh_admin_user }}/docker-build 
+#    executable: /bin/bash
+#  register: cmd_build_result
+

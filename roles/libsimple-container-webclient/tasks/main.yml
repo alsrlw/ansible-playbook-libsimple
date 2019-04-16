@@ -1,0 +1,40 @@
+---
+# Deploy a PatronWeb Server container
+
+# Add the designated Circulation Manager URL config if needed
+- name: Configure library CM URL
+  lineinfile:
+    path: "/home/{{ ssh_admin_user }}/docker-build/config/cm-libraries.conf"
+    create: yes
+    line: "{{ patronweb_path_short_name }}|{{ library_cm_url }}/{{ library_cm_short_name }}"
+
+- name: "Ensure {{ container_patronweb_name }} docker container is deployed"
+  docker_container:
+    name: "{{ container_patronweb_name }}"
+    # Retrieve image from Docker Hub when available; temporarily from the local docker host
+    # image: "nypl/{{ container_patronweb_name }}:{{ simplye_patronweb_version }}"
+    image: "{{ container_patronweb_name }}:{{ simplye_patronweb_version }}"
+
+    networks:
+      - name: "{{ network_name }}"
+    purge_networks: yes
+
+    log_driver: "{{ patronweb_server_log_driver }}"
+    # For AWS CloudWatch Logs, uncomment and use the following option(s) as a base
+    #log_options:
+    #  awslogs-region: "{{ aws_region }}"
+    #  awslogs-group: "{{ patronweb_log_group }}"
+    # The AWS IAM policy for the user must be updated to include the logs:CreateLogGroup permission before issuing next
+    #  awslogs-create-group: true
+
+    # TODO: Troubleshoot problem with Node app combined with restart_policy for process management
+    # restart_policy: "unless-stopped"
+    ports:
+      - "{{ patronweb_server_port }}:{{ patronweb_server_port }}"
+    env:
+      TERM: 'xterm'
+      CONFIG_FILE: "/config/cm-libraries.conf"
+    volumes:
+      - "/home/{{ ssh_admin_user }}/docker-build/config:/config"
+    detach: true
+    state: "{{ patronweb_server_state }}"

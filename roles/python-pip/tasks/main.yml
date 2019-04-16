@@ -1,0 +1,13 @@
+---
+# Role to Install Python Pip package manager
+
+- name: Install the latest version of python-pip
+  yum: 
+    name: python-pip
+    state: present
+
+# Upgrade pip to latest version
+- name: Upgrade pip
+  pip:
+    name: pip
+    extra_args: --upgrade

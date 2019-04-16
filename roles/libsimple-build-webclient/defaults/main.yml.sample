@@ -1,0 +1,9 @@
+---
+# Values to support building a Docker image for the patronweb server
+patronweb_docker_repo: "https://github.com/NYPL-Simplified/docker-patron-web.git"
+patronweb_docker_version: "master"
+patronweb_docker_filename: "Dockerfile"
+
+# Values for patronweb server code (passes without protocol or git extension)
+patronweb_code_repo: "NYPL-Simplified/circulation-patron-web"
+patronweb_code_version: "master"
