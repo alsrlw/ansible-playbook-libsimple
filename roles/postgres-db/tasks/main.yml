@@ -35,19 +35,17 @@
 
 - name: Install utilities needed for PG client utilities
   yum:
-    name: "{{ item }}"
+    name:
+      - wget
     disable_gpg_check: yes
     state: present
-  with_items:
-    - wget
 
 # Pip should have been installed from the libsimple-host-aws role
 - name: Install python modules required for some aws work with RDS Postgres
   pip: 
-    name: "{{ item }}"
+    name:
+      - psycopg2
     state: present
-  with_items:
-    - psycopg2
 
 - name: Ensure scripts directory exists
   file:

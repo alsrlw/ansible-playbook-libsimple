@@ -9,25 +9,23 @@
 
 - name: Install Docker prerequisites
   yum: 
-    name: "{{ item }}"
+    name:
+      - yum-utils
+      - device-mapper-persistent-data
+      - lvm2
     state: present
     update_cache: yes
     disable_gpg_check: yes
-  with_items:
-    - yum-utils
-    - device-mapper-persistent-data
-    - lvm2
 
 - name: Install Docker CE and utilities
   yum: 
-    name: "{{ item }}"
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
     state: present
     update_cache: yes
     disable_gpg_check: yes
-  with_items:
-    - docker-ce
-    - docker-ce-cli
-    - containerd.io
 
 - name: Start the docker service and enable it at boot
   systemd:

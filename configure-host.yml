@@ -56,19 +56,18 @@
     # Loop through utilities list
     - name: Install system utilities
       yum:
-        name: "{{ item }}"
+        name:
+          - htop
+          - iotop
+          - sysstat
+          - nano
+          - python-pip
         update_cache: yes
         disable_gpg_check: yes
         state: present
-      with_items:
-        - htop
-        - iotop
-        - sysstat
-        - nano
-        - python-pip
       register: yum_result
       retries: 10
-      until: yum_result | succeeded   # for ansible 2.5+ `result is succeeded`
+      until: yum_result is succeeded   # for ansible 2.5+ `result is succeeded`
       delay: 3
 
     - name: Upgrade pip

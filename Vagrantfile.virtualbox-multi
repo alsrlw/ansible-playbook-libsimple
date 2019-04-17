@@ -44,6 +44,8 @@ Vagrant.configure(2) do |config|
       #
       # Customize the amount of memory on the VM:
       vb1.memory = settings['cm_memory_allocation']
+      # Provide a more specific VB Manager name for the box
+      vb1.name = settings['cm_vm_name']
     end
     #
     # View the documentation for the provider you are using for more
@@ -106,6 +108,8 @@ Vagrant.configure(2) do |config|
       #
       # Customize the amount of memory on the VM:
       vb2.memory = settings['webclient_memory_allocation']
+      # Provide a more specific VB Manager name for the box
+      vb2.name = settings['webclient_vm_name']
     end
     #
     # View the documentation for the provider you are using for more

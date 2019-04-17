@@ -7,6 +7,7 @@ admin_password: ""
 
 # Customizations for Circulation Manager Server
 cm_machine_label: "CircMgr"
+cm_vm_name: "SimplyE Test Circ Manager"
 cm_memory_allocation: 4096
 cm_host_name: "devlocal-cm"
 cm_host_port: "8080"
@@ -15,6 +16,7 @@ cm_autostart: "true"
 # Customizations for Webclient Server
 temp_build: true
 webclient_machine_label: "WebClient"
+webclient_vm_name: "SimplyE Test Patron Web"
 webclient_memory_allocation: 2048
 webclient_host_name: "devlocal-webclient"
 webclient_host_port: "8081"
